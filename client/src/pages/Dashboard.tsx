@@ -135,7 +135,7 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout user={user}>
-      <WelcomeCard user={user.full_name} />
+      <WelcomeCard name={user.full_name} />
 
       <div className="mt-6">
         <StatisticsSection stats={statCards} />

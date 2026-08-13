@@ -4,6 +4,7 @@ const statusStyles: Record<EmployeeStatus, string> = {
   Active: "bg-green-50 text-[#16A34A]",
   "On Leave": "bg-amber-50 text-[#D97706]",
   Inactive: "bg-red-50 text-[#DC2626]",
+  
 };
 
 interface StatusBadgeProps {
