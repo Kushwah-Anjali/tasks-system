@@ -39,9 +39,6 @@ export default function RecentAttendance({ rows }: RecentAttendanceProps) {
         </button>
       </div>
 
-      {/* ============================== */}
-      {/* Table */}
-      {/* ============================== */}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-left">
           <thead>

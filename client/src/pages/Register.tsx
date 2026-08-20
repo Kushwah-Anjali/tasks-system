@@ -52,9 +52,7 @@ export default function Register() {
 
   return (
     <AuthLayout maxWidthClassName="max-w-md">
-      {/* ============================== */}
-      {/* Registration Card */}
-      {/* ============================== */}
+   
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

@@ -38,18 +38,11 @@ export default function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
-      {/* ============================== */}
-      {/* Error Message */}
-      {/* ============================== */}
       {errorMessage ? (
         <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-[#EF4444]">
           {errorMessage}
         </div>
       ) : null}
-
-      {/* ============================== */}
-      {/* Email Field */}
-      {/* ============================== */}
       <div className="flex flex-col gap-2">
         <label htmlFor="email" className="text-sm font-semibold text-[#0F172A]">
           Work email
@@ -73,9 +66,7 @@ export default function LoginForm({
         </div>
       </div>
 
-      {/* ============================== */}
-      {/* Password Field */}
-      {/* ============================== */}
+
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-[#0F172A]">Password</span>
@@ -88,10 +79,6 @@ export default function LoginForm({
         </div>
         <PasswordInput id="password" value={password} onChange={setPassword} />
       </div>
-
-      {/* ============================== */}
-      {/* Remember Me */}
-      {/* ============================== */}
       <label
         htmlFor="rememberMe"
         className="flex select-none items-center gap-2.5 pt-1"
@@ -108,10 +95,6 @@ export default function LoginForm({
           Remember me on this device
         </span>
       </label>
-
-      {/* ============================== */}
-      {/* Submit Button */}
-      {/* ============================== */}
       <motion.button
         type="submit"
         disabled={isSubmitting}

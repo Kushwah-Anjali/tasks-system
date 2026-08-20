@@ -33,13 +33,6 @@ export default function Login() {
   };
   return (
     <AuthLayout>
-      {/* ============================== */}
-      {/* Mobile Logo */}
-      {/* ============================== */}
-
-      {/* ============================== */}
-      {/* Login Card */}
-      {/* ============================== */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -61,10 +54,6 @@ export default function Login() {
           errorMessage={errorMessage}
         />
       </motion.div>
-
-      {/* ============================== */}
-      {/* Footer */}
-      {/* ============================== */}
       <p className="mt-8 text-center text-xs text-[#94A3B8]">
         &copy; {new Date().getFullYear()} All rights reserved.
       </p>

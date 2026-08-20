@@ -1,50 +1,39 @@
-import { useState, type FormEvent, type ChangeEvent } from "react";
+import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import PasswordInput from "./PasswordInput";
 import type { Department } from "../../services/departmentService";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 
-export interface RegisterFormValues {
-  fullName: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-  dateOfBirth: string;
-  departmentId: number | null;
-  designation: string;
-  joiningDate: string;
-}
+const registerSchema = z
+  .object({
+    fullName: z.string().trim().min(1, "Full name is required."),
+    email: z.string().email("Enter a valid email address."),
+    phone: z.string().regex(/^[0-9]{10}$/, "Enter a valid 10-digit phone number."),
+    password: z.string().min(8, "Password must be at least 8 characters."),
+    confirmPassword: z.string(),
+    dateOfBirth: z.string().min(1, "Date of birth is required.").refine((val) => {
+      const dob = new Date(val);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+      return age >= 18;
+    }, "Employee must be at least 18 years old."),
+  departmentId: z
+  .number()
+  .nullable()
+  .refine((val) => val !== null, "Please select a department."),
+    designation: z.string().trim().min(1, "Designation is required."),
+    joiningDate: z.string().min(1, "Joining date is required."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
 
-type FormErrors = Partial<Record<keyof RegisterFormValues, string>>;
-
-const initialValues: RegisterFormValues = {
-  fullName: "",
-  email: "",
-  phone: "",
-  password: "",
-  confirmPassword: "",
-  dateOfBirth: "",
-  departmentId: null,
-  designation: "",
-  joiningDate: "",
-};
-
-function validate(values: RegisterFormValues): FormErrors {
-  const errors: FormErrors = {};
-
-  if (!values.fullName.trim()) errors.fullName = "Full name is required.";
-  if (!/^\S+@\S+\.\S+$/.test(values.email)) errors.email = "Enter a valid email address.";
-  if (!/^[0-9]{10}$/.test(values.phone)) errors.phone = "Enter a valid 10-digit phone number.";
-  if (values.password.length < 8) errors.password = "Password must be at least 8 characters.";
-  if (values.confirmPassword !== values.password) errors.confirmPassword = "Passwords do not match.";
-  if (!values.dateOfBirth) errors.dateOfBirth = "Date of birth is required.";
-  if (!values.departmentId) errors.departmentId = "Please select a department.";
-  if (!values.designation.trim()) errors.designation = "Designation is required.";
-  if (!values.joiningDate) errors.joiningDate = "Joining date is required.";
-
-  return errors;
-}
+export type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const inputClass =
   "h-12 w-full rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none transition-all duration-150 focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10";
@@ -77,145 +66,120 @@ export default function RegisterForm({
   isSubmitting = false,
   errorMessage,
 }: RegisterFormProps) {
-  const [values, setValues] = useState<RegisterFormValues>(initialValues);
-  const [errors, setErrors] = useState<FormErrors>({});
 
-  const handleChange = (
-    field: keyof RegisterFormValues
-  ) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { value } = event.target;
-    setValues((prev) => ({
-      ...prev,
-      [field]: field === "departmentId" ? Number(value) || null : value,
-    }));
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const validationErrors = validate(values);
-    setErrors(validationErrors);
-    if (Object.keys(validationErrors).length === 0) {
-      onSubmit(values);
-    }
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    mode: "onBlur", // validate a field once the user leaves it — fixes the stale-error bug
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      dateOfBirth: "",
+      departmentId: null,
+      designation: "",
+      joiningDate: "",
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
       {errorMessage ? (
         <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-[#EF4444]">
           {errorMessage}
         </div>
       ) : null}
 
-      {/* ============================== */}
-      {/* Full Name */}
-      {/* ============================== */}
       <div className="flex flex-col gap-1.5">
         <FieldLabel htmlFor="fullName">Full name</FieldLabel>
         <input
           id="fullName"
-          name="fullName"
           type="text"
           autoComplete="name"
           placeholder="Jordan Ellis"
-          value={values.fullName}
-          onChange={handleChange("fullName")}
+          {...register("fullName")}
           className={inputClass}
         />
-        <FieldError message={errors.fullName} />
+        <FieldError message={errors.fullName?.message} />
       </div>
 
-      {/* ============================== */}
-      {/* Email + Phone */}
-      {/* ============================== */}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="email">Work email</FieldLabel>
           <input
             id="email"
-            name="email"
             type="email"
             autoComplete="email"
             placeholder="you@company.com"
-            value={values.email}
-            onChange={handleChange("email")}
+            {...register("email")}
             className={inputClass}
           />
-          <FieldError message={errors.email} />
+          <FieldError message={errors.email?.message} />
         </div>
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="phone">Phone number</FieldLabel>
           <input
             id="phone"
-            name="phone"
             type="tel"
             inputMode="numeric"
             autoComplete="tel"
             maxLength={10}
             placeholder="9876543210"
-            value={values.phone}
-            onChange={(event) =>
-              setValues((prev) => ({
-                ...prev,
-                phone: event.target.value.replace(/\D/g, "").slice(0, 10),
-              }))
-            }
+            {...register("phone", {
+              onChange: (e) => {
+                // strip non-digits and cap at 10, same as your original onChange did
+                e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+              },
+            })}
             className={inputClass}
           />
-          <FieldError message={errors.phone} />
+          <FieldError message={errors.phone?.message} />
         </div>
       </div>
 
-      {/* ============================== */}
-      {/* Password + Confirm Password */}
-      {/* ============================== */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <div className="flex flex-col gap-1.5">
           <PasswordInput
             id="password"
             label="Password"
-            value={values.password}
-            onChange={(value) => setValues((prev) => ({ ...prev, password: value }))}
+            value={watch("password")}
+            onChange={(value) => setValue("password", value, { shouldValidate: true })}
           />
-          <FieldError message={errors.password} />
+          <FieldError message={errors.password?.message} />
         </div>
         <div className="flex flex-col gap-1.5">
           <PasswordInput
             id="confirmPassword"
             label="Confirm password"
-            value={values.confirmPassword}
-            onChange={(value) => setValues((prev) => ({ ...prev, confirmPassword: value }))}
+            value={watch("confirmPassword")}
+            onChange={(value) => setValue("confirmPassword", value, { shouldValidate: true })}
             autoComplete="new-password"
           />
-          <FieldError message={errors.confirmPassword} />
+          <FieldError message={errors.confirmPassword?.message} />
         </div>
       </div>
 
-      {/* ============================== */}
-      {/* Date of Birth + Department */}
-      {/* ============================== */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="dateOfBirth">Date of birth</FieldLabel>
-          <input
-            id="dateOfBirth"
-            name="dateOfBirth"
-            type="date"
-            value={values.dateOfBirth}
-            onChange={handleChange("dateOfBirth")}
-            className={inputClass}
-          />
-          <FieldError message={errors.dateOfBirth} />
+          <input id="dateOfBirth" type="date" {...register("dateOfBirth")} className={inputClass} />
+          <FieldError message={errors.dateOfBirth?.message} />
         </div>
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="departmentId">Department</FieldLabel>
           <div className="relative">
             <select
               id="departmentId"
-              name="departmentId"
-              value={values.departmentId ?? ""}
-              onChange={handleChange("departmentId")}
               disabled={isLoadingDepartments}
+              {...register("departmentId", { valueAsNumber: true })}
               className={`${inputClass} appearance-none pr-10 disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <option value="" disabled>
@@ -232,44 +196,35 @@ export default function RegisterForm({
               strokeWidth={2}
             />
           </div>
-          <FieldError message={errors.departmentId} />
+          <FieldError message={errors.departmentId?.message} />
         </div>
       </div>
 
-      {/* ============================== */}
-      {/* Designation + Joining Date */}
-      {/* ============================== */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="designation">Designation</FieldLabel>
           <input
             id="designation"
-            name="designation"
             type="text"
             placeholder="Software Engineer"
-            value={values.designation}
-            onChange={handleChange("designation")}
+            {...register("designation")}
             className={inputClass}
           />
-          <FieldError message={errors.designation} />
+          <FieldError message={errors.designation?.message} />
         </div>
         <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="joiningDate">Joining date</FieldLabel>
           <input
             id="joiningDate"
-            name="joiningDate"
             type="date"
-            value={values.joiningDate}
-            onChange={handleChange("joiningDate")}
+            max={new Date().toISOString().split("T")[0]}
+            {...register("joiningDate")}
             className={inputClass}
           />
-          <FieldError message={errors.joiningDate} />
+          <FieldError message={errors.joiningDate?.message} />
         </div>
       </div>
 
-      {/* ============================== */}
-      {/* Submit Button */}
-      {/* ============================== */}
       <motion.button
         type="submit"
         disabled={isSubmitting}
