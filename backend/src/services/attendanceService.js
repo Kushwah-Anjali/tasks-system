@@ -149,8 +149,7 @@ const getTodayAttendance = async (userId) => {
        attendance_date,
        check_in,
        check_out,
-       status,
-       notes
+       status
      FROM attendance
      WHERE employee_id = ?
      AND attendance_date = ?`,

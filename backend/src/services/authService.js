@@ -132,8 +132,14 @@ const login = async (userData) => {
     },
   };
 };
-
+const logout = async (sessionToken) => {
+  await db.promise().query(
+    "DELETE FROM sessions WHERE session_token = ?",
+    [sessionToken]
+  );
+};
 module.exports = {
   register,
   login,
+  logout,
 };

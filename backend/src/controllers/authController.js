@@ -30,7 +30,31 @@ const login = async (req, res) => {
     });
   }
 };
+const logout = async (req, res) => {
+  try {
+    const sessionToken = req.cookies.session;
+
+    if (sessionToken) {
+      await authService.logout(sessionToken);
+    }
+
+    res.clearCookie("session", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+
+    res.status(200).json({
+      message: "Logout successful",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+};
 module.exports = {
   register,
   login,
+  logout,
 };

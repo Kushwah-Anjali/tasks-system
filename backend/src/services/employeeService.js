@@ -3,7 +3,7 @@ const db = require("../config/db");
 const getAllEmployees = async () => {
   const [employees] = await db.promise().query(`
     SELECT
-      e.id,
+      u.id,
       e.registration_number,
       e.date_of_birth,
       e.designation,
