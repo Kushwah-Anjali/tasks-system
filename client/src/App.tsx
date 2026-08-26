@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Register from "./pages/Register";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Employees from "./pages/Employees";
+import Tasks from "./pages/Tasks";
 export default function App() {
   return (
     <Routes>
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
       <Route path="/employees" element={<Employees />} />
+      <Route path="/tasks" element={<Tasks />} />
     </Routes>
   );
 }

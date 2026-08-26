@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Bell, ChevronDown, Settings, LogOut, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
-
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../services/authService";
 function NotificationRow({ title, time }: { title: string; time: string }) {
   return (
     <button className="flex w-full flex-col items-start gap-0.5 rounded-xl px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#F8FAFC]">
@@ -16,13 +17,16 @@ function ProfileMenuItem({
   icon,
   label,
   danger = false,
+  onClick,
 }: {
   icon: ReactNode;
   label: string;
   danger?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <button
+    <button 
+      onClick={onClick}
       className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-150 ${
         danger ? "text-[#EF4444] hover:bg-red-50" : "text-[#334155] hover:bg-[#F1F5F9]"
       }`}
@@ -37,8 +41,7 @@ interface EmployeeNavbarProps {
   onMenuClick: () => void;
   employeeName: string;
   employeeInitials: string;
-}
-
+} 
 export default function EmployeeNavbar({
   onMenuClick,
   employeeName,
@@ -48,7 +51,14 @@ export default function EmployeeNavbar({
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-
+  const navigate = useNavigate();
+const handleLogout = async () => {
+    try {
+      await logout();
+navigate("/login", { replace: true });    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -142,8 +152,12 @@ export default function EmployeeNavbar({
                 <ProfileMenuItem icon={<UserRound className="h-4 w-4" />} label="View profile" />
                 <ProfileMenuItem icon={<Settings className="h-4 w-4" />} label="Account settings" />
                 <div className="my-1 h-px bg-[#E2E8F0]" />
-                <ProfileMenuItem icon={<LogOut className="h-4 w-4" />} label="Sign out" danger />
-              </motion.div>
+<ProfileMenuItem
+  icon={<LogOut className="h-4 w-4" />}
+  label="Sign out"
+  danger
+  onClick={handleLogout}
+/>              </motion.div>
             ) : null}
           </AnimatePresence>
         </div>

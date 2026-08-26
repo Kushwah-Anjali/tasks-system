@@ -2,11 +2,10 @@ import EmployeeDashboardLayout from "../components/layout/Employeedashboardlayou
 import EmployeeWelcomeCard from "../components/dashboard/EmployeeWelcomeCard";
 import TodayAttendanceCard from "../components/dashboard/TodayAttendanceCard";
 import AttendanceSummaryCard from "../components/dashboard/AttendanceSummaryCard";
-import WeeklyAttendanceChart, {
+import {
   type WeeklyAttendanceDay,
 } from "../components/dashboard/WeeklyAttendanceChart";
-import MonthlyAttendanceVisual from "../components/dashboard/MonthlyAttendanceVisual";
-import AttendanceCalendar from "../components/dashboard/AttendanceCalendar";
+
 import type { AttendanceDayStatus } from "../components/employees/AttendenceStatus";
 import { useEffect, useState } from "react";
 import {
@@ -214,11 +213,11 @@ export default function EmployeeDashboard() {
         />
       </div>
 
-      <div className="mt-5">
+      {/* <div className="mt-5">
         <WeeklyAttendanceChart days={weeklyChartData} />
-      </div>
+      </div> */}
 
-      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
+      {/* <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
         <MonthlyAttendanceVisual
           present={monthSummary.present}
           late={monthSummary.late}
@@ -231,7 +230,7 @@ export default function EmployeeDashboard() {
           attendanceByDate={calendarAttendance}
           today={10}
         />
-      </div>
+      </div> */}
     </EmployeeDashboardLayout>
   );
 }

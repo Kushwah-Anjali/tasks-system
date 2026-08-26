@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: <LayoutDashboard className="h-[18px] w-[18px]" />, path: "/dashboard" },
   { label: "Employees", icon: <Users className="h-[18px] w-[18px]" />, path: "/employees" },
   { label: "Attendance", icon: <CalendarCheck2 className="h-[18px] w-[18px]" /> },
-  { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" /> },
+  { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/tasks" },
   { label: "Payroll", icon: <Wallet className="h-[18px] w-[18px]" /> },
   { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" /> },
 ];

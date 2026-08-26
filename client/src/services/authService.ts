@@ -8,6 +8,11 @@ export const login = async (email: string, password: string) => {
 
   return response.data;
 };
+export const logout = async () => {
+  const response = await api.post("/auth/logout");
+
+  return response.data;
+};
 export const register = async (payload: {
   full_name: string;
   email: string;

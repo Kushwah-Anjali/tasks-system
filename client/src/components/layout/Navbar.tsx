@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../services/authService";
 import {
   Menu,
   Search,
@@ -23,18 +25,22 @@ function ProfileMenuItem({
   icon,
   label,
   danger = false,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   danger?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
+       onClick={onClick}
       className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-150 ${
         danger
           ? "text-[#EF4444] hover:bg-red-50"
           : "text-[#334155] hover:bg-[#F1F5F9]"
       }`}
+   
     >
       {icon}
       {label}
@@ -56,7 +62,14 @@ export default function Navbar({ onMenuClick, user }: NavbarProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-
+  const navigate = useNavigate();
+const handleLogout = async () => {
+    try {
+      await logout();
+navigate("/login", { replace: true });    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -82,9 +95,7 @@ export default function Navbar({ onMenuClick, user }: NavbarProps) {
     .toUpperCase();
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-[#E2E8F0] bg-white/90 px-4 backdrop-blur-sm sm:px-6">
-      {/* ============================== */}
-      {/* Mobile Menu Trigger */}
-      {/* ============================== */}
+ 
       <button
         onClick={onMenuClick}
         className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9] lg:hidden"
@@ -92,10 +103,6 @@ export default function Navbar({ onMenuClick, user }: NavbarProps) {
       >
         <Menu className="h-5 w-5" />
       </button>
-
-      {/* ============================== */}
-      {/* Search */}
-      {/* ============================== */}
       <div className="relative hidden flex-1 max-w-md sm:block">
         <Search
           className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]"
@@ -115,9 +122,7 @@ export default function Navbar({ onMenuClick, user }: NavbarProps) {
       </button>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        {/* ============================== */}
-        {/* Notifications */}
-        {/* ============================== */}
+        
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setNotificationsOpen((prev) => !prev)}
@@ -202,9 +207,11 @@ export default function Navbar({ onMenuClick, user }: NavbarProps) {
                 />
                 <div className="my-1 h-px bg-[#E2E8F0]" />
                 <ProfileMenuItem
-                  icon={<LogOut className="h-4 w-4" />}
+                  icon={<LogOut  className="h-4 w-4" />}
                   label="Sign out"
                   danger
+                onClick={handleLogout}
+
                 />
               </motion.div>
             ) : null}
