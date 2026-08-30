@@ -9,10 +9,10 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { ArrowUpDown, Users } from "lucide-react";
-import StatusBadge from "./StatusBadge";
+import EmployeeStatusBadge from "./EmployeeStatusBadge";
 import EmployeeActionsMenu from "./EmployeeActionMenu";
 import EmployeePagination from "./EmployeePagination";
-import type { Employee } from "./types";
+import type { Employee } from "../../types/employee";
 
 function getInitials(name: string) {
   return name
@@ -61,7 +61,7 @@ const columns = [
   }),
   columnHelper.accessor("status", {
     header: "Status",
-    cell: (info) => <StatusBadge status={info.getValue()} />,
+    cell: (info) => <EmployeeStatusBadge status={info.getValue()} />,
   }),
   columnHelper.display({
     id: "actions",

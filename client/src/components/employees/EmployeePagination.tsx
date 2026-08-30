@@ -1,6 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Table } from "@tanstack/react-table";
-import type { Employee } from "./types";
+import type {
+    Employee,
+} from "../../types/employee";
 
 interface EmployeePaginationProps {
   table: Table<Employee>;

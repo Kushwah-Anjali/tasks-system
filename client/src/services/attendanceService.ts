@@ -1,64 +1,60 @@
 import api from "./api";
 
-export interface TodayAttendance {
-  id: number;
-  attendance_date: string;
-  check_in: string | null;
-  check_out: string | null;
-  status: string;
-}
-export interface MonthlyAttendanceSummary {
-  present: number;
-  late: number;
-  absent: number;
-  attendancePercentage: number;
+import type {
+    AttendanceRecord,
+    MonthlyAttendanceSummary,
+} from "../types/attendance";
+
+interface TodayAttendanceResponse {
+    attendance: AttendanceRecord | null;
 }
 
-export interface MonthlyAttendance {
-  id: number;
-  attendance_date: string;
-  check_in: string | null;
-  check_out: string | null;
-  status: string;
+interface MonthlySummaryResponse {
+    summary: MonthlyAttendanceSummary;
 }
 
-export const getTodayAttendance = async (): Promise<TodayAttendance | null> => {
-  const response = await api.get("/attendance/today");
+interface MessageResponse {
+    message: string;
+}
 
-  return response.data.attendance;
-};
-export const getWeeklyAttendance = async (): Promise<TodayAttendance[]> => {
-  const response = await api.get("/attendance/weekly");
+export const getTodayAttendance =
+    async (): Promise<
+        AttendanceRecord | null
+    > => {
+        const response =
+            await api.get<TodayAttendanceResponse>(
+                "/attendance/today"
+            );
 
-  return response.data.attendance;
-};
-export const checkIn = async () => {
-  const response = await api.post("/attendance/check-in");
+        return response.data.attendance;
+    };
 
-  return response.data;
-};
-
-export const checkOut = async () => {
-  const response = await api.post("/attendance/check-out");
-
-  return response.data;
-};
 export const getMonthlySummary =
-  async (): Promise<MonthlyAttendanceSummary> => {
-    const response = await api.get("/attendance/monthly-summary");
+    async (): Promise<MonthlyAttendanceSummary> => {
+        const response =
+            await api.get<MonthlySummaryResponse>(
+                "/attendance/monthly-summary"
+            );
 
-    return response.data.summary;
-  };
-  export const getMonthlyAttendance = async (
-  year: number,
-  month: number
-): Promise<MonthlyAttendance[]> => {
-  const response = await api.get("/attendance/monthly", {
-    params: {
-      year,
-      month,
-    },
-  });
+        return response.data.summary;
+    };
 
-  return response.data.attendance;
-};
+export const checkIn =
+    async (): Promise<MessageResponse> => {
+        const response =
+            await api.post<MessageResponse>(
+                "/attendance/check-in"
+            );
+
+        return response.data;
+    };
+
+export const checkOut =
+    async (): Promise<MessageResponse> => {
+        const response =
+            await api.post<MessageResponse>(
+                "/attendance/check-out"
+            );
+
+        return response.data;
+    };

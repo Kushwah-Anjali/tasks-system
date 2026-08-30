@@ -1,40 +1,95 @@
 const taskService = require("../services/taskService");
+
+// ==============================
+// Reusable Task ID Validation
+// ==============================
+
+const getTaskId = (req, res) => {
+    const taskId = Number(req.params.id);
+
+    if (!Number.isInteger(taskId) || taskId <= 0) {
+        res.status(400).json({
+            message: "Invalid task id",
+        });
+
+        return null;
+    }
+
+    return taskId;
+};
+
+// ==============================
+// Create Task
+// Manager Only
+// ==============================
+
 const createTask = async (req, res) => {
     try {
+        const { title, assigned_to, due_date } = req.body;
+
+        if (
+            typeof title !== "string" ||
+            !title.trim() ||
+            !Number.isInteger(Number(assigned_to)) ||
+            !due_date
+        ) {
+            return res.status(400).json({
+                message:
+                    "Title, assigned employee and due date are required",
+            });
+        }
+
         const taskData = {
-            title: req.body.title,
+            title: title.trim(),
             created_by: req.user.id,
-            assigned_to: req.body.assigned_to,
-            due_date: req.body.due_date,
+            assigned_to: Number(assigned_to),
+            due_date,
         };
 
         const task = await taskService.createTask(taskData);
 
-        res.status(201).json({
+        return res.status(201).json({
             message: "Task created successfully",
             task,
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
+// ==============================
+// Get Employee Tasks
+// ==============================
+
 const getMyTasks = async (req, res) => {
     try {
         const tasks = await taskService.getMyTasks(req.user.id);
 
-        res.status(200).json({
+        return res.status(200).json({
             tasks,
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
+// ==============================
+// Update Task Progress
+// Employee Only
+// ==============================
+
 const updateTaskProgress = async (req, res) => {
     try {
+        const taskId = getTaskId(req, res);
+
+        if (taskId === null) {
+            return;
+        }
+
         const { progress } = req.body;
 
         if (
@@ -43,102 +98,183 @@ const updateTaskProgress = async (req, res) => {
             progress > 100
         ) {
             return res.status(400).json({
-                message: "Progress must be between 0 and 100",
+                message:
+                    "Progress must be a number between 0 and 100",
             });
         }
 
         const result = await taskService.updateTaskProgress(
-            req.params.id,
+            taskId,
             req.user.id,
             progress
         );
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
-                message: "Task not found",
+                message:
+                    "Task not found or not assigned to this employee",
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Progress updated successfully",
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
+// ==============================
+// Submit Task
+// Employee Only
+// ==============================
+
 const submitTask = async (req, res) => {
     try {
+        const taskId = getTaskId(req, res);
+
+        if (taskId === null) {
+            return;
+        }
+
         const result = await taskService.submitTask(
-            req.params.id,
+            taskId,
             req.user.id
         );
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
-                message: "Task not found",
+                message:
+                    "Task not found or not assigned to this employee",
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Task submitted successfully",
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
+// ==============================
+// Review Submitted Task
+// Manager Only
+// ==============================
+
 const reviewTask = async (req, res) => {
     try {
+        const taskId = getTaskId(req, res);
+
+        if (taskId === null) {
+            return;
+        }
+
         const { status, review_note } = req.body;
 
+        if (
+            typeof status !== "string" ||
+            !status.trim()
+        ) {
+            return res.status(400).json({
+                message: "Review status is required",
+            });
+        }
+
+        if (
+            review_note !== undefined &&
+            review_note !== null &&
+            typeof review_note !== "string"
+        ) {
+            return res.status(400).json({
+                message: "Review note must be text",
+            });
+        }
+
         const result = await taskService.reviewTask(
-            req.params.id,
-            status,
-            review_note
+            taskId,
+            status.trim(),
+            review_note?.trim() || null
         );
 
         if (result.affectedRows === 0) {
             return res.status(400).json({
-                message: "Task cannot be reviewed",
+                message:
+                    "Only a submitted task can be reviewed",
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Task reviewed successfully",
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
+// ==============================
+// Get All Tasks
+// Manager Only
+// ==============================
+
 const getAllTasks = async (req, res) => {
     try {
         const tasks = await taskService.getAllTasks();
-        res.status(200).json({
+
+        return res.status(200).json({
             tasks,
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
+// ==============================
+// Update Task
+// Manager Only
+// ==============================
+
 const updateTaskByManager = async (req, res) => {
     try {
+        const taskId = getTaskId(req, res);
+
+        if (taskId === null) {
+            return;
+        }
+
         const { title, assigned_to, due_date } = req.body;
 
-        const result = await taskService.updateTaskByManager(
-            req.params.id,
-            {
-                title,
-                assigned_to,
-                due_date,
-            }
-        );
+        if (
+            typeof title !== "string" ||
+            !title.trim() ||
+            !Number.isInteger(Number(assigned_to)) ||
+            !due_date
+        ) {
+            return res.status(400).json({
+                message:
+                    "Title, assigned employee and due date are required",
+            });
+        }
+
+        const taskData = {
+            title: title.trim(),
+            assigned_to: Number(assigned_to),
+            due_date,
+        };
+
+        const result =
+            await taskService.updateTaskByManager(
+                taskId,
+                taskData
+            );
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -146,18 +282,30 @@ const updateTaskByManager = async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Task updated successfully",
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
+// ==============================
+// Delete Task
+// Manager Only
+// ==============================
+
 const deleteTask = async (req, res) => {
     try {
-        const result = await taskService.deleteTask(req.params.id);
+        const taskId = getTaskId(req, res);
+
+        if (taskId === null) {
+            return;
+        }
+
+        const result = await taskService.deleteTask(taskId);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -165,15 +313,16 @@ const deleteTask = async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Task deleted successfully",
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: error.message,
         });
     }
 };
+
 module.exports = {
     createTask,
     getMyTasks,

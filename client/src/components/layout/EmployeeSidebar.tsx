@@ -25,7 +25,7 @@ const navItems: EmployeeNavItem[] = [
   },
   { label: "Attendance", icon: <CalendarCheck2 className="h-[18px] w-[18px]" /> },
   { label: "Leave", icon: <CalendarDays className="h-[18px] w-[18px]" /> },
-  { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" /> },
+  { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/employee-tasks" },
   { label: "Profile", icon: <UserRound className="h-[18px] w-[18px]" /> },
   { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" /> },
 ];
@@ -48,6 +48,7 @@ export default function EmployeeSidebar({ isOpen, onClose }: EmployeeSidebarProp
       {/* Logo */}
       {/* ============================== */}
       <div className="flex h-16 items-center justify-between px-5">
+      
         <button
           onClick={onClose}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9] lg:hidden"

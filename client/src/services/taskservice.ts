@@ -1,21 +1,105 @@
 import api from "./api";
 
-export interface CreateTaskPayload {
-  title: string;
-  assigned_to: number;
-  due_date: string;
-}
+import type {
+    CreateTaskPayload,
+    MessageResponse,
+    Task,
+    TasksResponse,
+    TaskStatus,
+} from "../types/task";
 
-export const createTask = async (payload: CreateTaskPayload) => {
-  const response = await api.post("/tasks", payload);
+const normalizeTaskStatus = (
+    status: string
+): TaskStatus => {
+    const normalized = status
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_");
 
-  return response.data;
+    switch (normalized) {
+        case "not_started":
+        case "assigned":
+            return "assigned";
+
+        case "in_progress":
+            return "in_progress";
+
+        case "submitted":
+            return "submitted";
+
+        case "completed":
+            return "completed";
+
+        case "overdue":
+            return "overdue";
+
+        default:
+            return "assigned";
+    }
 };
-export const getAllTasks = async () => {
-  const response = await api.get("/tasks");
-  return response.data;
+
+const normalizeTask = (task: Task): Task => {
+    return {
+        ...task,
+        status: normalizeTaskStatus(task.status),
+        progress: Number(task.progress) || 0,
+        assigned_date: task.assigned_date ?? null,
+    };
 };
-export const deleteTask = async (taskId: number) => {
-  const response = await api.delete(`/tasks/${taskId}`);
-  return response.data;
+
+export const createTask = async (
+    payload: CreateTaskPayload
+): Promise<MessageResponse> => {
+    const response = await api.post<MessageResponse>(
+        "/tasks",
+        payload
+    );
+
+    return response.data;
+};
+
+export const getAllTasks = async (): Promise<Task[]> => {
+    const response =
+        await api.get<TasksResponse>("/tasks");
+
+    return response.data.tasks.map(normalizeTask);
+};
+
+export const getMyTasks = async (): Promise<Task[]> => {
+    const response =
+        await api.get<TasksResponse>("/tasks/my");
+
+    return response.data.tasks.map(normalizeTask);
+};
+
+export const updateTaskProgress = async (
+    taskId: number,
+    progress: number
+): Promise<MessageResponse> => {
+    const response = await api.patch<MessageResponse>(
+        `/tasks/${taskId}/progress`,
+        { progress }
+    );
+
+    return response.data;
+};
+
+export const submitTaskForReview = async (
+    taskId: number
+): Promise<MessageResponse> => {
+    const response = await api.patch<MessageResponse>(
+        `/tasks/${taskId}/submit`
+    );
+
+    return response.data;
+};
+
+export const deleteTask = async (
+    taskId: number
+): Promise<MessageResponse> => {
+    const response = await api.delete<MessageResponse>(
+        `/tasks/${taskId}`
+    );
+
+    return response.data;
 };

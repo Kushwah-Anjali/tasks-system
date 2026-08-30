@@ -1,43 +1,46 @@
 import api from "./api";
-import type { Employee, EmployeeStatus } from "../components/employees/types";
-interface EmployeeApiResponse {
-  id: number;
-  registration_number: string;
-  date_of_birth: string | null;
-  designation: string | null;
-  joining_date: string | null;
-  full_name: string;
-  email: string;
-  phone: string | null;
-  account_status: string;
-  is_active: number;
-  department_id: number | null;
-  department: string | null;
-}
+
+import type {
+    Employee,
+    EmployeeApiResponse,
+    EmployeeStatus,
+} from "loye../types/empe";
 
 interface GetEmployeesResponse {
-  employees: EmployeeApiResponse[];
+    employees: EmployeeApiResponse[];
 }
 
-const mapEmployee = (employee: EmployeeApiResponse): Employee => {
-  const status: EmployeeStatus = employee.is_active
-    ? "Active"
-    : "Inactive";
+const mapEmployee = (
+    employee: EmployeeApiResponse
+): Employee => {
+    const status: EmployeeStatus =
+        Number(employee.is_active) === 1
+            ? "Active"
+            : "Inactive";
 
-  return {
-    id: employee.id,
-    fullName: employee.full_name,
-    email: employee.email,
-    registrationNumber: employee.registration_number,
-    department: employee.department,
-    designation: employee.designation,
-    joiningDate: employee.joining_date,
-    status,
-  };
+    return {
+        id: employee.id,
+        fullName: employee.full_name,
+        email: employee.email,
+
+        registrationNumber:
+            employee.registration_number,
+
+        department: employee.department,
+        designation: employee.designation,
+        joiningDate: employee.joining_date,
+        status,
+    };
 };
 
-export const getEmployees = async (): Promise<Employee[]> => {
-  const response = await api.get<GetEmployeesResponse>("/employees");
+export const getEmployees =
+    async (): Promise<Employee[]> => {
+        const response =
+            await api.get<GetEmployeesResponse>(
+                "/employees"
+            );
 
-  return response.data.employees.map(mapEmployee);
-};
+        return response.data.employees.map(
+            mapEmployee
+        );
+    };

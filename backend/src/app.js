@@ -14,9 +14,9 @@ app.use(cors({
   origin: "http://localhost:5173",
   credentials: true,
 }));
+app.use(express.json());
 app.use(cookieParser());
 
-app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("API Running...");
@@ -28,4 +28,11 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/tasks", taskRoutes);
+
+app.use((req, res) => {
+    return res.status(404).json({
+        message: "API route not found",
+    });
+});
+ 
 module.exports = app;

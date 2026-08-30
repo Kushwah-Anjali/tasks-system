@@ -6,8 +6,13 @@ import AuthLayout from "../components/layout/AuthLayout";
 import RegisterForm, {
   type RegisterFormValues,
 } from "../components/auth/RegisterForm";
-import { getDepartments, type Department } from "../services/departmentService";
-import { register } from "../services/authService";
+import {
+    getDepartments,
+} from "../services/departmentService";
+
+import type {
+    Department,
+} from "../types/department";import { register } from "../services/authService";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -25,27 +30,58 @@ export default function Register() {
       )
       .finally(() => setIsLoadingDepartments(false));
   }, []);
+const getApiErrorMessage = (
+    error: unknown
+): string => {
+    if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error
+    ) {
+        const responseError = error as {
+            response?: {
+                data?: {
+                    message?: string;
+                };
+            };
+        };
 
+        return (
+            responseError.response?.data
+                ?.message ||
+            "Registration failed."
+        );
+    }
+
+    return "Registration failed.";
+};
   const handleSubmit = async (values: RegisterFormValues) => {
     setErrorMessage(undefined);
     setIsSubmitting(true);
     try {
-      const response = await register({
-        full_name: values.fullName,
-        email: values.email,
-        phone: values.phone,
-        password: values.password,
-        date_of_birth: values.dateOfBirth,
-        department_id: values.departmentId as number,
-        designation: values.designation,
-        joining_date: values.joiningDate,
-      });
+    const response = await register({
+    full_name: values.fullName.trim(),
+    email: values.email
+        .trim()
+        .toLowerCase(),
+    phone: values.phone.trim(),
+    password: values.password,
+    date_of_birth:
+        values.dateOfBirth || "",
+    department_id: Number(
+        values.departmentId
+    ),
+    designation:
+        values.designation.trim(),
+    joining_date:
+        values.joiningDate || "",
+});
       setRegistrationNumber(response.registrationNumber);
-    } catch (error) {
-      setErrorMessage(
-        "Registration failed. Please check your details and try again.",
-      );
-    } finally {
+     } catch (error: unknown) {
+    setErrorMessage(
+        getApiErrorMessage(error)
+    );
+} finally {
       setIsSubmitting(false);
     }
   };

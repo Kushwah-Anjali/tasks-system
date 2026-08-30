@@ -1,150 +1,240 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
+
 import { Plus } from "lucide-react";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
+import CreateTaskModal from "../components/tasks/CreateTaskModal";
 import TaskFilters from "../components/tasks/TaskFilters";
 import TaskTable from "../components/tasks/TaskTable";
-import CreateTaskModal from "../components/tasks/CreateTaskModal";
 
-import type { Task, TaskStatus } from "../components/tasks/types";
-import { getAllTasks, deleteTask } from "../services/taskservice";
+import {
+    deleteTask,
+    getAllTasks,
+} from "../services/taskService";
+
+import type {
+    Task,
+    TaskStatus,
+} from "../types/task";
+
+import { getCurrentUser } from "../utils/authStorage";
+
+interface PageMessage {
+    type: "success" | "error";
+    text: string;
+}
+
 export default function Tasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+    const user = getCurrentUser();
 
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<TaskStatus | "">("");
+    const [tasks, setTasks] = useState<
+        Task[]
+    >([]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string>();
+    const [search, setSearch] =
+        useState("");
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>();
+    const [status, setStatus] = useState<
+        TaskStatus | ""
+    >("");
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const [isModalOpen, setIsModalOpen] =
+        useState(false);
 
-  const loadTasks = async () => {
-    try {
-      setIsLoading(true);
-      setError(undefined);
+    const [isLoading, setIsLoading] =
+        useState(true);
 
-      const data = await getAllTasks();
-      setTasks(data.tasks);
-    } catch (error) {
-      console.error("Failed to load tasks:", error);
+    const [message, setMessage] =
+        useState<PageMessage>();
 
-      setError("Unable to load tasks. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const loadTasks =
+        useCallback(async () => {
+            try {
+                setIsLoading(true);
+                setMessage(undefined);
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
+                const allTasks =
+                    await getAllTasks();
 
-  useEffect(() => {
-    if (!successMessage) return;
+                setTasks(allTasks);
+            } catch {
+                setMessage({
+                    type: "error",
+                    text: "Unable to load tasks. Please try again.",
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        }, []);
 
-    const timer = setTimeout(() => {
-      setSuccessMessage(undefined);
-    }, 4000);
+    useEffect(() => {
+        void loadTasks();
+    }, [loadTasks]);
 
-    return () => clearTimeout(timer);
-  }, [successMessage]);
+    useEffect(() => {
+        if (!message) return;
 
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      const query = search.trim().toLowerCase();
+        const timer = window.setTimeout(
+            () => {
+                setMessage(undefined);
+            },
+            4000
+        );
 
-      const matchesSearch =
-        !query ||
-        task.title.toLowerCase().includes(query) ||
-        task.assigned_to_name.toLowerCase().includes(query);
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [message]);
 
-      const matchesStatus =
-        !status || task.status === status;
+    const filteredTasks = useMemo(() => {
+        const query = search
+            .trim()
+            .toLowerCase();
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [search, status, tasks]);
+        return tasks.filter((task) => {
+            const employeeName =
+                task.assigned_to_name ?? "";
 
-  const handleTaskCreated = async () => {
-    await loadTasks();
+            const matchesSearch =
+                !query ||
+                task.title
+                    .toLowerCase()
+                    .includes(query) ||
+                employeeName
+                    .toLowerCase()
+                    .includes(query);
 
-    setSuccessMessage("Task created successfully.");
-  };
-const handleTaskDelete = async (taskId: number) => {
-  try {
-    await deleteTask(taskId);
-    await loadTasks();
-    setSuccessMessage("Task deleted successfully.");
-  } catch {
-    setSuccessMessage("Failed to delete task.");
-  }
-};
-  return (
-    <DashboardLayout user={user}>
-      <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
-            Tasks
-          </h1>
+            const matchesStatus =
+                !status ||
+                task.status === status;
 
-          <p className="mt-1 text-sm text-[#64748B]">
-            Manage and track all tasks across your team.
-          </p>
-        </div>
+            return (
+                matchesSearch &&
+                matchesStatus
+            );
+        });
+    }, [tasks, search, status]);
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#1D4ED8]"
-        >
-          <Plus
-            className="h-4 w-4"
-            strokeWidth={2.5}
-          />
+    const handleTaskCreated =
+        async () => {
+            await loadTasks();
 
-          Create Task
-        </button>
-      </div>
+            setMessage({
+                type: "success",
+                text: "Task created successfully.",
+            });
+        };
 
-      <div className="flex flex-col gap-5">
-        {successMessage ? (
-          <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-[#16A34A]">
-            {successMessage}
-          </div>
-        ) : null}
+    const handleTaskDelete = async (
+        taskId: number
+    ) => {
+        try {
+            await deleteTask(taskId);
 
-        {error ? (
-          <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-[#EF4444]">
-            {error}
-          </div>
-        ) : null}
+            setTasks((currentTasks) =>
+                currentTasks.filter(
+                    (task) =>
+                        task.id !== taskId
+                )
+            );
 
-        <TaskFilters
-          search={search}
-          onSearchChange={setSearch}
-          status={status}
-          onStatusChange={setStatus}
-        />
+            setMessage({
+                type: "success",
+                text: "Task deleted successfully.",
+            });
+        } catch {
+            setMessage({
+                type: "error",
+                text: "Failed to delete task.",
+            });
+        }
+    };
 
-        {isLoading ? (
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-8 text-center text-sm text-[#64748B]">
-            Loading tasks...
-          </div>
-        ) : (
-<TaskTable
-  tasks={filteredTasks}
-  onTaskDelete={handleTaskDelete}
-/>
-        )}
-      </div>
+    if (!user) return null;
 
-      <CreateTaskModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreated={handleTaskCreated}
-      />
-    </DashboardLayout>
-  );
+    return (
+        <DashboardLayout user={user}>
+            <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
+                        Tasks
+                    </h1>
+
+                    <p className="mt-1 text-sm text-[#64748B]">
+                        Manage and track all
+                        tasks across your team.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() =>
+                        setIsModalOpen(true)
+                    }
+                    className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]"
+                >
+                    <Plus
+                        className="h-4 w-4"
+                        strokeWidth={2.5}
+                    />
+
+                    Create Task
+                </button>
+            </div>
+
+            <div className="flex flex-col gap-5">
+                {message ? (
+                    <div
+                        className={`rounded-xl border px-4 py-3 text-sm font-medium ${
+                            message.type ===
+                            "success"
+                                ? "border-green-100 bg-green-50 text-[#16A34A]"
+                                : "border-red-100 bg-red-50 text-[#EF4444]"
+                        }`}
+                    >
+                        {message.text}
+                    </div>
+                ) : null}
+
+                <TaskFilters
+                    search={search}
+                    onSearchChange={setSearch}
+                    status={status}
+                    onStatusChange={
+                        setStatus
+                    }
+                />
+
+                {isLoading ? (
+                    <div className="rounded-2xl border border-[#E2E8F0] bg-white p-8 text-center text-sm text-[#64748B]">
+                        Loading tasks...
+                    </div>
+                ) : (
+                    <TaskTable
+                        tasks={
+                            filteredTasks
+                        }
+                        onTaskDelete={
+                            handleTaskDelete
+                        }
+                    />
+                )}
+            </div>
+
+            <CreateTaskModal
+                open={isModalOpen}
+                onClose={() =>
+                    setIsModalOpen(false)
+                }
+                onCreated={
+                    handleTaskCreated
+                }
+            />
+        </DashboardLayout>
+    );
 }

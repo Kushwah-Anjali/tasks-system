@@ -1,5 +1,7 @@
 import { Search, ChevronDown, X, Plus } from "lucide-react";
-import type { EmployeeStatus } from "./types";
+import type {
+    EmployeeStatus,
+} from "../../types/employee";
 
 const statusOptions: EmployeeStatus[] = ["Active", "Inactive", "On Leave"];
 

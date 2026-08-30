@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Bell, ChevronDown, Settings, LogOut, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { logout } from "../../services/authService";
+import { useLogout } from "../../hooks/useLogout";
 function NotificationRow({ title, time }: { title: string; time: string }) {
   return (
     <button className="flex w-full flex-col items-start gap-0.5 rounded-xl px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#F8FAFC]">
@@ -51,14 +50,10 @@ export default function EmployeeNavbar({
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-const handleLogout = async () => {
-    try {
-      await logout();
-navigate("/login", { replace: true });    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+const {
+    handleLogout,
+    isLoggingOut,
+} = useLogout();
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -153,11 +148,20 @@ navigate("/login", { replace: true });    } catch (error) {
                 <ProfileMenuItem icon={<Settings className="h-4 w-4" />} label="Account settings" />
                 <div className="my-1 h-px bg-[#E2E8F0]" />
 <ProfileMenuItem
-  icon={<LogOut className="h-4 w-4" />}
-  label="Sign out"
-  danger
-  onClick={handleLogout}
-/>              </motion.div>
+    icon={
+        <LogOut className="h-4 w-4" />
+    }
+    label={
+        isLoggingOut
+            ? "Signing out..."
+            : "Sign out"
+    }
+    danger
+    onClick={() => {
+        void handleLogout();
+    }}
+/>     
+       </motion.div>
             ) : null}
           </AnimatePresence>
         </div>

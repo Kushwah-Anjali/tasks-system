@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { logout } from "../../services/authService";
+import { useLogout } from "../../hooks/useLogout";
+import type {
+    AuthUser,
+} from "../../types/auth";
 import {
   Menu,
   Search,
@@ -49,27 +51,18 @@ function ProfileMenuItem({
 }
 
 interface NavbarProps {
-  onMenuClick: () => void;
-  user: {
-    id: number;
-    full_name: string;
-    email: string;
-    role: string;
-  };
+    onMenuClick: () => void;
+    user: AuthUser;
 }
 export default function Navbar({ onMenuClick, user }: NavbarProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-const handleLogout = async () => {
-    try {
-      await logout();
-navigate("/login", { replace: true });    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+const {
+    handleLogout,
+    isLoggingOut,
+} = useLogout();
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -149,10 +142,7 @@ navigate("/login", { replace: true });    } catch (error) {
                   title="Leave request from Daniel Kim"
                   time="10 minutes ago"
                 />
-                <NotificationRow
-                  title="Payroll run completed for July"
-                  time="2 hours ago"
-                />
+            
                 <NotificationRow
                   title="3 new employees onboarded"
                   time="Yesterday"
@@ -206,13 +196,20 @@ navigate("/login", { replace: true });    } catch (error) {
                   label="Account settings"
                 />
                 <div className="my-1 h-px bg-[#E2E8F0]" />
-                <ProfileMenuItem
-                  icon={<LogOut  className="h-4 w-4" />}
-                  label="Sign out"
-                  danger
-                onClick={handleLogout}
-
-                />
+             <ProfileMenuItem
+    icon={
+        <LogOut className="h-4 w-4" />
+    }
+    label={
+        isLoggingOut
+            ? "Signing out..."
+            : "Sign out"
+    }
+    danger
+    onClick={() => {
+        void handleLogout();
+    }}
+/>
               </motion.div>
             ) : null}
           </AnimatePresence>

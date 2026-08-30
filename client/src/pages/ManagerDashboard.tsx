@@ -9,7 +9,9 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-
+import {
+    getCurrentUser,
+} from "../utils/authStorage";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import WelcomeCard from "../components/dashboard/WelcomeCard";
 import StatisticsSection from "../components/dashboard/StatisticsSection";
@@ -81,8 +83,7 @@ const quickActions: QuickAction[] = [
 ];
 
 export default function Dashboard() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-
+const user = getCurrentUser();
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
@@ -132,7 +133,7 @@ export default function Dashboard() {
       icon: <ClipboardList className="h-5 w-5" />,
     },
   ];
-
+  if (!user) return null;
   return (
     <DashboardLayout user={user}>
       <WelcomeCard name={user.full_name} />

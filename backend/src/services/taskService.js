@@ -24,16 +24,6 @@ const getMyTasks = async (userId) => {
 
     return tasks;
 };
-const updateTask = async (taskId, userId, progress, status) => {
-    const [result] = await db.promise().query(
-        `UPDATE tasks
-         SET progress = ?, status = ?
-         WHERE id = ? AND assigned_to = ?`,
-        [progress, status, taskId, userId]
-    );
-
-    return result;
-};
 const submitTask = async (taskId, userId) => {
     const [result] = await db.promise().query(
         `UPDATE tasks

@@ -1,15 +1,19 @@
 import api from "./api";
 
-export interface Department {
-  id: number;
-  name: string;
-}
+import type {
+    Department,
+} from "../types/department";
 
 interface DepartmentsResponse {
-  data: Department[];
+    data: Department[];
 }
 
-export async function getDepartments(): Promise<Department[]> {
-  const response = await api.get<DepartmentsResponse>("/departments");
-  return response.data.data;
-}
+export const getDepartments =
+    async (): Promise<Department[]> => {
+        const response =
+            await api.get<DepartmentsResponse>(
+                "/departments"
+            );
+
+        return response.data.data;
+    };

@@ -1,236 +1,258 @@
-import EmployeeDashboardLayout from "../components/layout/Employeedashboardlayout";
+import {
+    useEffect,
+    useState,
+} from "react";
+
+import EmployeeDashboardLayout from "../components/layout/EmployeeDashboardLayout";
+
 import EmployeeWelcomeCard from "../components/dashboard/EmployeeWelcomeCard";
 import TodayAttendanceCard from "../components/dashboard/TodayAttendanceCard";
 import AttendanceSummaryCard from "../components/dashboard/AttendanceSummaryCard";
-import {
-  type WeeklyAttendanceDay,
-} from "../components/dashboard/WeeklyAttendanceChart";
 
-import type { AttendanceDayStatus } from "../components/employees/AttendenceStatus";
-import { useEffect, useState } from "react";
 import {
-  getTodayAttendance,
-  getWeeklyAttendance,
-  getMonthlySummary,
-  getMonthlyAttendance,
-  checkIn,
-  checkOut,
-  type TodayAttendance,
-  type MonthlyAttendanceSummary,
-  type MonthlyAttendance,
+    checkIn,
+    checkOut,
+    getMonthlySummary,
+    getTodayAttendance,
 } from "../services/attendanceService";
 
-import { useLocation } from "react-router-dom";
-export default function EmployeeDashboard() {
-  const location = useLocation();
-  const user = location.state?.user;
-  const [todayAttendance, setTodayAttendance] =
-    useState<TodayAttendance | null>(null);
-  const [weeklyAttendance, setWeeklyAttendance] = useState<TodayAttendance[]>(
-    [],
-  );
-  const [monthSummary, setMonthSummary] = useState<MonthlyAttendanceSummary>({
-    present: 0,
-    late: 0,
-    absent: 0,
-    attendancePercentage: 0,
-  });
-  const [monthlyAttendance, setMonthlyAttendance] = useState<
-    MonthlyAttendance[]
-  >([]);
-  const calendarAttendance: Record<number, AttendanceDayStatus> = {};
+import type {
+    AttendanceRecord,
+    MonthlyAttendanceSummary,
+} from "../types/attendance";
+import {
+    getCurrentUser,
+    getInitials,
+} from "../utils/authStorage";
 
-  monthlyAttendance.forEach((day) => {
-    const date = Number(day.attendance_date.split("-")[2]);
-
-    if (day.status === "late") {
-      calendarAttendance[date] = "Late";
-    } else if (day.status === "present") {
-      calendarAttendance[date] = "Present";
-    } else if (day.status === "absent") {
-      calendarAttendance[date] = "Absent";
-    }
-  });
-  const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
-
-  useEffect(() => {
-    const loadAttendance = async () => {
-      try {
-        const [today, weekly, monthly, calendar] = await Promise.all([
-          getTodayAttendance(),
-          getWeeklyAttendance(),
-          getMonthlySummary(),
-          getMonthlyAttendance(2026, 8),
-        ]);
-
-        setTodayAttendance(today);
-        setWeeklyAttendance(weekly);
-        setMonthSummary(monthly);
-        setMonthlyAttendance(calendar);
-      } catch (error) {
-        console.error("Failed to load attendance:", error);
-      } finally {
-        setIsLoadingAttendance(false);
-      }
+const emptyMonthlySummary: MonthlyAttendanceSummary =
+    {
+        present: 0,
+        late: 0,
+        absent: 0,
+        attendancePercentage: 0,
     };
 
-    loadAttendance();
-  }, []);
+const formatTime = (
+    value: string | null | undefined
+): string => {
+    if (!value) return "—";
 
-  const getDisplayStatus = ():
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
+
+const formatTodayDate = (): string => {
+    return new Date().toLocaleDateString(
+        "en-IN",
+        {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+        }
+    );
+};
+
+const getAttendanceStatus = (
+    attendance: AttendanceRecord | null
+):
     | "Present"
     | "Late"
     | "Absent"
     | "Not Checked In" => {
-    if (!todayAttendance) {
-      return "Not Checked In";
+    switch (
+        attendance?.status) {
+        case "present":
+            return "Present";
+
+        case "late":
+            return "Late";
+
+        case "absent":
+            return "Absent";
+
+        default:
+            return "Not Checked In";
     }
+};
 
-    switch (todayAttendance.status) {
-      case "present":
-        return "Present";
+export default function EmployeeDashboard() {
+    const user = getCurrentUser();
 
-      case "late":
-        return "Late";
+    const [
+        todayAttendance,
+        setTodayAttendance,
+    ] = useState<AttendanceRecord | null>(
+        null
+    );
 
-      case "absent":
-        return "Absent";
+    const [
+        monthlySummary,
+        setMonthlySummary,
+    ] =
+        useState<MonthlyAttendanceSummary>(
+            emptyMonthlySummary
+        );
 
-      default:
-        return "Not Checked In";
-    }
-  };
-  const formatTime = (value: string | null) => {
-    if (!value) return "";
+    const [isLoading, setIsLoading] =
+        useState(true);
 
-    return new Date(value).toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+    const [errorMessage, setErrorMessage] =
+        useState("");
 
-  const formatDate = () => {
-    return new Date().toLocaleDateString("en-IN", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  };
-  const handleCheckIn = async () => {
-    try {
-      await checkIn();
+    const [isUpdating, setIsUpdating] =
+        useState(false);
 
-      const attendance = await getTodayAttendance();
+    useEffect(() => {
+        const loadDashboard = async () => {
+            try {
+                setIsLoading(true);
+                setErrorMessage("");
 
-      setTodayAttendance(attendance);
-    } catch (error) {
-      console.error("Check-in failed:", error);
-    }
-  };
+                const [today, summary] =
+                    await Promise.all([
+                        getTodayAttendance(),
+                        getMonthlySummary(),
+                    ]);
 
-  const handleCheckOut = async () => {
-    try {
-      await checkOut();
+                setTodayAttendance(today);
+                setMonthlySummary(summary);
+            } catch {
+                setErrorMessage(
+                    "Unable to load attendance information."
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-      const attendance = await getTodayAttendance();
+        void loadDashboard();
+    }, []);
 
-      setTodayAttendance(attendance);
-    } catch (error) {
-      console.error("Check-out failed:", error);
-    }
-  };
-  const calculateHours = (
-    checkIn: string | null,
-    checkOut: string | null,
-  ): number => {
-    if (!checkIn || !checkOut) return 0;
+    const refreshTodayAttendance =
+        async () => {
+            const attendance =
+                await getTodayAttendance();
 
-    const start = new Date(checkIn).getTime();
-    const end = new Date(checkOut).getTime();
+            setTodayAttendance(attendance);
+        };
 
-    return Number(((end - start) / (1000 * 60 * 60)).toFixed(1));
-  };
-  const weeklyChartData: WeeklyAttendanceDay[] = weeklyAttendance.map(
-    (day) => ({
-      label: new Date(day.attendance_date).toLocaleDateString("en-US", {
-        weekday: "short",
-      }),
-      date: new Date(day.attendance_date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      status:
-        day.status === "late"
-          ? "Late"
-          : day.status === "present"
-            ? "Present"
-            : "Absent",
-      checkIn: day.check_in ? formatTime(day.check_in) : "—",
-      hours: calculateHours(day.check_in, day.check_out),
-    }),
-  );
+    const handleCheckIn = async () => {
+        try {
+            setIsUpdating(true);
+            setErrorMessage("");
 
-  const fullName = user.full_name;
-  const firstName = fullName.split(" ")[0];
+            await checkIn();
+            await refreshTodayAttendance();
+        } catch {
+            setErrorMessage(
+                "Check-in failed. Please try again."
+            );
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
-  const initials = fullName
-    .split(" ")
-    .map((name: string) => name[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  return (
-    <EmployeeDashboardLayout
-      employeeName={fullName}
-      employeeInitials={initials}
-    >
-      <EmployeeWelcomeCard name={firstName} />
+    const handleCheckOut = async () => {
+        try {
+            setIsUpdating(true);
+            setErrorMessage("");
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <TodayAttendanceCard
-          date={formatDate()}
-          checkIn={
-            isLoadingAttendance
-              ? "Loading..."
-              : formatTime(todayAttendance?.check_in ?? null) || "—"
-          }
-          checkOut={formatTime(todayAttendance?.check_out ?? null)}
-          status={getDisplayStatus()}
-          canCheckIn={!isLoadingAttendance && !todayAttendance?.check_in}
-          canCheckOut={
-            !isLoadingAttendance &&
-            !!todayAttendance?.check_in &&
-            !todayAttendance?.check_out
-          }
-          onCheckIn={handleCheckIn}
-          onCheckOut={handleCheckOut}
-        />
-        <AttendanceSummaryCard
-          present={monthSummary.present}
-          late={monthSummary.late}
-          absent={monthSummary.absent}
-          attendancePercentage={monthSummary.attendancePercentage}
-        />
-      </div>
+            await checkOut();
+            await refreshTodayAttendance();
+        } catch {
+            setErrorMessage(
+                "Check-out failed. Please try again."
+            );
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
-      {/* <div className="mt-5">
-        <WeeklyAttendanceChart days={weeklyChartData} />
-      </div> */}
+    if (!user) return null;
 
-      {/* <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <MonthlyAttendanceVisual
-          present={monthSummary.present}
-          late={monthSummary.late}
-          absent={monthSummary.absent}
-        />
-        <AttendanceCalendar
-          year={2026}
-          month={7}
-          monthLabel="August 2026"
-          attendanceByDate={calendarAttendance}
-          today={10}
-        />
-      </div> */}
-    </EmployeeDashboardLayout>
-  );
+    const firstName =
+        user.full_name
+            .trim()
+            .split(/\s+/)[0] || "Employee";
+
+    return (
+        <EmployeeDashboardLayout
+            employeeName={user.full_name}
+            employeeInitials={getInitials(
+                user.full_name
+            )}
+        >
+            <EmployeeWelcomeCard
+                name={firstName}
+            />
+
+            {errorMessage ? (
+                <div className="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                    {errorMessage}
+                </div>
+            ) : null}
+
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+                <TodayAttendanceCard
+                    date={formatTodayDate()}
+                    checkIn={
+                        isLoading
+                            ? "Loading..."
+                            : formatTime(
+                                  todayAttendance?.check_in
+                              )
+                    }
+                    checkOut={formatTime(
+                        todayAttendance?.check_out
+                    )}
+                    status={getAttendanceStatus(
+                        todayAttendance
+                    )}
+                    canCheckIn={
+                        !isLoading &&
+                        !isUpdating &&
+                        !todayAttendance?.check_in
+                    }
+                    canCheckOut={
+                        !isLoading &&
+                        !isUpdating &&
+                        Boolean(
+                            todayAttendance?.check_in
+                        ) &&
+                        !todayAttendance?.check_out
+                    }
+                    onCheckIn={
+                        handleCheckIn
+                    }
+                    onCheckOut={
+                        handleCheckOut
+                    }
+                />
+
+                <AttendanceSummaryCard
+                    present={
+                        monthlySummary.present
+                    }
+                    late={
+                        monthlySummary.late
+                    }
+                    absent={
+                        monthlySummary.absent
+                    }
+                    attendancePercentage={
+                        monthlySummary.attendancePercentage
+                    }
+                />
+            </div>
+        </EmployeeDashboardLayout>
+    );
 }

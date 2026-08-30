@@ -2,16 +2,23 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import PasswordInput from "./PasswordInput";
-import type { Department } from "../../services/departmentService";
+import type {
+    Department,
+} from "../../types/department";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
+import {z} from "zod";
 
 const registerSchema = z
   .object({
     fullName: z.string().trim().min(1, "Full name is required."),
     email: z.string().email("Enter a valid email address."),
     phone: z.string().regex(/^[0-9]{10}$/, "Enter a valid 10-digit phone number."),
-    password: z.string().min(8, "Password must be at least 8 characters."),
+  password: z
+    .string()
+    .min(
+        6,
+        "Password must contain at least 6 characters"
+    ),
     confirmPassword: z.string(),
     dateOfBirth: z.string().min(1, "Date of birth is required.").refine((val) => {
       const dob = new Date(val);
@@ -21,10 +28,12 @@ const registerSchema = z
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
       return age >= 18;
     }, "Employee must be at least 18 years old."),
-  departmentId: z
-  .number()
-  .nullable()
-  .refine((val) => val !== null, "Please select a department."),
+departmentId: z.coerce
+    .number()
+    .int()
+    .positive(
+        "Please select a department"
+    ),
     designation: z.string().trim().min(1, "Designation is required."),
     joiningDate: z.string().min(1, "Joining date is required."),
   })
