@@ -158,38 +158,7 @@ const getTodayAttendance = async (userId) => {
 
   return attendance.length > 0 ? attendance[0] : null;
 };
-const getWeeklyAttendance = async (userId) => {
-  const connection = db.promise();
 
-  const [employees] = await connection.query(
-    `SELECT id
-     FROM employees
-     WHERE user_id = ?`,
-    [userId]
-  );
-
-  if (employees.length === 0) {
-    throw new Error("Employee profile not found");
-  }
-
-  const employeeId = employees[0].id;
-
-  const [attendance] = await connection.query(
-    `SELECT
-       attendance_date,
-       check_in,
-       check_out,
-       status
-     FROM attendance
-     WHERE employee_id = ?
-     AND attendance_date >= CURDATE() - INTERVAL 6 DAY
-     AND attendance_date <= CURDATE()
-     ORDER BY attendance_date ASC`,
-    [employeeId]
-  );
-
-  return attendance;
-};
 const getMonthlySummary = async (userId) => {
   const connection = db.promise();
 
@@ -239,44 +208,10 @@ const attendancePercentage =
     attendancePercentage,
   };
 };
-const getMonthlyAttendance = async (userId, year, month) => {
-  const connection = db.promise();
 
-  const [employees] = await connection.query(
-    `SELECT id
-     FROM employees
-     WHERE user_id = ?`,
-    [userId]
-  );
-
-  if (employees.length === 0) {
-    throw new Error("Employee profile not found");
-  }
-
-  const employeeId = employees[0].id;
-
-  const [attendance] = await connection.query(
-    `SELECT
-       id,
-       DATE_FORMAT(attendance_date, '%Y-%m-%d') AS attendance_date,
-       check_in,
-       check_out,
-       status
-     FROM attendance
-     WHERE employee_id = ?
-     AND YEAR(attendance_date) = ?
-     AND MONTH(attendance_date) = ?
-     ORDER BY attendance_date ASC`,
-    [employeeId, year, month]
-  );
-
-  return attendance;
-};
 module.exports = {
   checkIn,
   checkOut,
   getTodayAttendance,
-  getWeeklyAttendance,
   getMonthlySummary,
-  getMonthlyAttendance,
 };
