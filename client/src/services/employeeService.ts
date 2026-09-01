@@ -4,7 +4,7 @@ import type {
     Employee,
     EmployeeApiResponse,
     EmployeeStatus,
-} from "loye../types/empe";
+} from "../types/employee";
 
 interface GetEmployeesResponse {
     employees: EmployeeApiResponse[];

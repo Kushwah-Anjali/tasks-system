@@ -7,7 +7,6 @@ import {
   ClipboardList,
   UserRound,
   Settings,
-  LogOut,
   X,
 } from "lucide-react";
 
