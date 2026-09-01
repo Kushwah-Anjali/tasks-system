@@ -6,7 +6,6 @@ import {
   CalendarCheck2,
   ClipboardList,
   Settings,
-  LogOut,
   X,
 } from "lucide-react";
 
