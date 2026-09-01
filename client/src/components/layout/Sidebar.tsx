@@ -79,16 +79,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           );
         })}
       </nav>
-
-      {/* ============================== */}
-      {/* Sign Out */}
-      {/* ============================== */}
-      <div className="border-t border-[#E2E8F0] p-3">
-        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#64748B] transition-colors duration-150 hover:bg-[#F1F5F9] hover:text-[#0F172A]">
-          <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />
-          Sign out
-        </button>
-      </div>
     </aside>
   );
 }

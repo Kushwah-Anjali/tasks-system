@@ -1,154 +1,136 @@
 import {
-  Users,
-  CalendarCheck2,
-  FileClock,
-  ClipboardList,
-  UserPlus,
-  CalendarPlus,
-  FilePlus2,
-  Wallet,
+    CalendarCheck2,
+    CalendarPlus,
+    ClipboardList,
+    FileClock,
+    FilePlus2,
+    UserPlus,
+    Users,
+    Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-    getCurrentUser,
-} from "../utils/authStorage";
+
 import DashboardLayout from "../components/layout/DashboardLayout";
-import WelcomeCard from "../components/dashboard/WelcomeCard";
-import StatisticsSection from "../components/dashboard/StatisticsSection";
-import RecentAttendance, {
-  type AttendanceRow,
-} from "../components/dashboard/RecentAttendance";
 import QuickActions, {
-  type QuickAction,
+    type QuickAction,
 } from "../components/dashboard/QuickActions";
+import RecentAttendance from "../components/dashboard/RecentAttendance";
+import StatisticsSection from "../components/dashboard/StatisticsSection";
 import type { StatCard } from "../components/dashboard/StatsCard";
+import WelcomeCard from "../components/dashboard/WelcomeCard";
+import {
+    getDashboardStats,
+    getRecentAttendance,
+    type DashboardStats,
+    type RecentAttendanceRecord,
+} from "../services/dashboardService";
+import { getCurrentUser } from "../utils/authStorage";
 
-import { getDashboardStats } from "../services/dashboardService";
-
-const attendanceRows: AttendanceRow[] = [
-  {
-    name: "Amelia Carter",
-    role: "Product Designer",
-    checkIn: "09:02 AM",
-    checkOut: "06:10 PM",
-    status: "Present",
-  },
-  {
-    name: "Rohan Mehta",
-    role: "Backend Engineer",
-    checkIn: "09:24 AM",
-    checkOut: "06:05 PM",
-    status: "Late",
-  },
-  {
-    name: "Sofia Reyes",
-    role: "HR Manager",
-    checkIn: "08:55 AM",
-    checkOut: "05:58 PM",
-    status: "Present",
-  },
-  {
-    name: "Daniel Kim",
-    role: "QA Engineer",
-    checkIn: "—",
-    checkOut: "—",
-    status: "Absent",
-  },
-  {
-    name: "Priya Nair",
-    role: "Marketing Lead",
-    checkIn: "09:01 AM",
-    checkOut: "06:20 PM",
-    status: "Present",
-  },
-];
+const initialStats: DashboardStats = {
+    totalEmployees: 0,
+    presentToday: 0,
+    onLeave: 0,
+    openTasks: 0,
+};
 
 const quickActions: QuickAction[] = [
-  {
-    label: "Add Employee",
-    icon: <UserPlus className="h-5 w-5" />,
-  },
-  {
-    label: "Mark Attendance",
-    icon: <CalendarPlus className="h-5 w-5" />,
-  },
-  {
-    label: "Create Task",
-    icon: <FilePlus2 className="h-5 w-5" />,
-  },
-  {
-    label: "Run Payroll",
-    icon: <Wallet className="h-5 w-5" />,
-  },
+    { label: "Add Employee", icon: <UserPlus className="h-5 w-5" /> },
+    { label: "Mark Attendance", icon: <CalendarPlus className="h-5 w-5" /> },
+    { label: "Create Task", icon: <FilePlus2 className="h-5 w-5" /> },
+    { label: "Run Payroll", icon: <Wallet className="h-5 w-5" /> },
 ];
 
-export default function Dashboard() {
-const user = getCurrentUser();
-  const [totalEmployees, setTotalEmployees] = useState(0);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
+export default function ManagerDashboard() {
+    const user = getCurrentUser();
+    const [stats, setStats] = useState<DashboardStats>(initialStats);
+    const [recentAttendance, setRecentAttendance] = useState<
+        RecentAttendanceRecord[]
+    >([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    const loadDashboardStats = async () => {
-      try {
-        const stats = await getDashboardStats();
+    useEffect(() => {
+        const loadDashboard = async () => {
+            try {
+                setIsLoading(true);
+                setErrorMessage("");
 
-        setTotalEmployees(stats.totalEmployees);
-      } catch (error) {
-        console.error("Failed to load dashboard stats:", error);
-      } finally {
-        setIsLoadingStats(false);
-      }
-    };
+                const [dashboardStats, attendance] = await Promise.all([
+                    getDashboardStats(),
+                    getRecentAttendance(),
+                ]);
 
-    loadDashboardStats();
-  }, []);
+                setStats(dashboardStats);
+                setRecentAttendance(attendance);
+            } catch {
+                setErrorMessage("Unable to load dashboard data.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-  const statCards: StatCard[] = [
-    {
-      label: "Total Employees",
-      value: isLoadingStats ? "—" : String(totalEmployees),
-      delta: "",
-      trend: "up",
-      icon: <Users className="h-5 w-5" />,
-    },
-    {
-      label: "Present Today",
-      value: "221",
-      delta: "89% attendance",
-      trend: "up",
-      icon: <CalendarCheck2 className="h-5 w-5" />,
-    },
-    {
-      label: "On Leave",
-      value: "14",
-      delta: "-3 vs last week",
-      trend: "down",
-      icon: <FileClock className="h-5 w-5" />,
-    },
-    {
-      label: "Open Tasks",
-      value: "37",
-      delta: "+5 this week",
-      trend: "up",
-      icon: <ClipboardList className="h-5 w-5" />,
-    },
-  ];
-  if (!user) return null;
-  return (
-    <DashboardLayout user={user}>
-      <WelcomeCard name={user.full_name} />
+        void loadDashboard();
+    }, []);
 
-      <div className="mt-6">
-        <StatisticsSection stats={statCards} />
-      </div>
+    if (!user) return null;
 
-      <div className="mt-6">
-        <RecentAttendance rows={attendanceRows} />
-      </div>
+    const value = (count: number) => (isLoading ? "—" : String(count));
 
-      <div className="mt-6">
-        <QuickActions actions={quickActions} />
-      </div>
-    </DashboardLayout>
-  );
+    const statCards: StatCard[] = [
+        {
+            label: "Total Employees",
+            value: value(stats.totalEmployees),
+            delta: "Active employees",
+            trend: "up",
+            icon: <Users className="h-5 w-5" />,
+        },
+        {
+            label: "Present Today",
+            value: value(stats.presentToday),
+            delta: "Includes late check-ins",
+            trend: "up",
+            icon: <CalendarCheck2 className="h-5 w-5" />,
+        },
+        {
+            label: "On Leave",
+            value: value(stats.onLeave),
+            delta: "Leave API not connected",
+            trend: "up",
+            icon: <FileClock className="h-5 w-5" />,
+        },
+        {
+            label: "Open Tasks",
+            value: value(stats.openTasks),
+            delta: "Not completed",
+            trend: "up",
+            icon: <ClipboardList className="h-5 w-5" />,
+        },
+    ];
+
+    return (
+        <DashboardLayout user={user}>
+            <WelcomeCard name={user.full_name} />
+
+            {errorMessage ? (
+                <div className="mt-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                    {errorMessage}
+                </div>
+            ) : null}
+
+            <div className="mt-6">
+                <StatisticsSection stats={statCards} />
+            </div>
+
+            <div className="mt-6">
+                <RecentAttendance
+                    rows={recentAttendance}
+                    isLoading={isLoading}
+                />
+            </div>
+
+            <div className="mt-6">
+                <QuickActions actions={quickActions} />
+            </div>
+        </DashboardLayout>
+    );
 }
