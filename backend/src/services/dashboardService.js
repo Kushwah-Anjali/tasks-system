@@ -7,7 +7,6 @@ const getDashboardStats = async () => {
          WHERE role = 'employee'
            AND status = 'approved'
            AND is_active = 1`
-    );
 
     const [[attendanceResult]] = await db.promise().query(
         `SELECT COUNT(DISTINCT employee_id) AS presentToday
