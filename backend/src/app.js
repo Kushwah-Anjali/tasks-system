@@ -11,7 +11,11 @@ const attendanceRoutes = require("./routes/attendanceRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+    "https://tasks.solezz.in",
+    "https://tasks-system.vercel.app",
+  ],
   credentials: true,
 }));
 app.use(express.json());
