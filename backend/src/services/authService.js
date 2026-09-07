@@ -120,7 +120,8 @@ const login = async ({ email, password }) => {
             password,
             role,
             status,
-            is_active
+            is_active,
+            can_manage_attendance
          FROM users
          WHERE email = ?
          LIMIT 1`,
@@ -178,6 +179,8 @@ const login = async ({ email, password }) => {
             full_name: user.full_name,
             email: user.email,
             role: user.role,
+            can_manage_attendance:
+                Number(user.can_manage_attendance) === 1,
         },
     };
 };

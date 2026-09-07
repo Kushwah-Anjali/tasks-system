@@ -1,19 +1,12 @@
 import {
     CalendarCheck2,
-    CalendarPlus,
     ClipboardList,
-    FileClock,
-    FilePlus2,
-    UserPlus,
+    UserX,
     Users,
-    Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
-import QuickActions, {
-    type QuickAction,
-} from "../components/dashboard/QuickActions";
 import RecentAttendance from "../components/dashboard/RecentAttendance";
 import StatisticsSection from "../components/dashboard/StatisticsSection";
 import type { StatCard } from "../components/dashboard/StatsCard";
@@ -29,25 +22,24 @@ import { getCurrentUser } from "../utils/authStorage";
 const initialStats: DashboardStats = {
     totalEmployees: 0,
     presentToday: 0,
-    onLeave: 0,
+    absentToday: 0,
     openTasks: 0,
 };
 
-const quickActions: QuickAction[] = [
-    { label: "Add Employee", icon: <UserPlus className="h-5 w-5" /> },
-    { label: "Mark Attendance", icon: <CalendarPlus className="h-5 w-5" /> },
-    { label: "Create Task", icon: <FilePlus2 className="h-5 w-5" /> },
-    { label: "Run Payroll", icon: <Wallet className="h-5 w-5" /> },
-];
-
 export default function ManagerDashboard() {
     const user = getCurrentUser();
-    const [stats, setStats] = useState<DashboardStats>(initialStats);
-    const [recentAttendance, setRecentAttendance] = useState<
-        RecentAttendanceRecord[]
-    >([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [errorMessage, setErrorMessage] = useState("");
+
+    const [stats, setStats] =
+        useState<DashboardStats>(initialStats);
+
+    const [recentAttendance, setRecentAttendance] =
+        useState<RecentAttendanceRecord[]>([]);
+
+    const [isLoading, setIsLoading] =
+        useState(true);
+
+    const [errorMessage, setErrorMessage] =
+        useState("");
 
     useEffect(() => {
         const loadDashboard = async () => {
@@ -55,15 +47,18 @@ export default function ManagerDashboard() {
                 setIsLoading(true);
                 setErrorMessage("");
 
-                const [dashboardStats, attendance] = await Promise.all([
-                    getDashboardStats(),
-                    getRecentAttendance(),
-                ]);
+                const [dashboardStats, attendance] =
+                    await Promise.all([
+                        getDashboardStats(),
+                        getRecentAttendance(),
+                    ]);
 
                 setStats(dashboardStats);
                 setRecentAttendance(attendance);
             } catch {
-                setErrorMessage("Unable to load dashboard data.");
+                setErrorMessage(
+                    "Unable to load dashboard data."
+                );
             } finally {
                 setIsLoading(false);
             }
@@ -74,7 +69,8 @@ export default function ManagerDashboard() {
 
     if (!user) return null;
 
-    const value = (count: number) => (isLoading ? "—" : String(count));
+    const value = (count: number) =>
+        isLoading ? "—" : String(count);
 
     const statCards: StatCard[] = [
         {
@@ -87,16 +83,16 @@ export default function ManagerDashboard() {
         {
             label: "Present Today",
             value: value(stats.presentToday),
-            delta: "Includes late check-ins",
+            delta: "Marked present today",
             trend: "up",
             icon: <CalendarCheck2 className="h-5 w-5" />,
         },
         {
-            label: "On Leave",
-            value: value(stats.onLeave),
-            delta: "Leave API not connected",
-            trend: "up",
-            icon: <FileClock className="h-5 w-5" />,
+            label: "Absent Today",
+            value: value(stats.absentToday),
+            delta: "Marked absent today",
+            trend: "down",
+            icon: <UserX className="h-5 w-5" />,
         },
         {
             label: "Open Tasks",
@@ -118,7 +114,9 @@ export default function ManagerDashboard() {
             ) : null}
 
             <div className="mt-6">
-                <StatisticsSection stats={statCards} />
+                <StatisticsSection
+                    stats={statCards}
+                />
             </div>
 
             <div className="mt-6">
@@ -126,10 +124,6 @@ export default function ManagerDashboard() {
                     rows={recentAttendance}
                     isLoading={isLoading}
                 />
-            </div>
-
-            <div className="mt-6">
-                <QuickActions actions={quickActions} />
             </div>
         </DashboardLayout>
     );

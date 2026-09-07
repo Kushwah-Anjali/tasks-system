@@ -49,6 +49,7 @@ export default function DashboardLayout({
             </AnimatePresence>
 
             <Sidebar
+                user={user}
                 isOpen={sidebarOpen}
                 onClose={closeSidebar}
             />

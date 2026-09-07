@@ -6,6 +6,7 @@ import {
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
+import AttendanceManagement from "./pages/AttendanceManagement";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import EmployeeTasks from "./pages/EmployeeTasks";
 import Employees from "./pages/Employees";
@@ -85,6 +86,15 @@ export default function App() {
                 element={
                     <ProtectedRoute allowedRole="manager">
                         <Tasks />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/attendance"
+                element={
+                    <ProtectedRoute requireAttendanceView>
+                        <AttendanceManagement />
                     </ProtectedRoute>
                 }
             />

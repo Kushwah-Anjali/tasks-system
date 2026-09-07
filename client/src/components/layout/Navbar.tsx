@@ -9,9 +9,9 @@ import {
   Search,
   Bell,
   ChevronDown,
-  Settings,
+  // Settings,
   LogOut,
-  UserRound,
+  // UserRound,
 } from "lucide-react";
 
 function NotificationRow({ title, time }: { title: string; time: string }) {
@@ -187,14 +187,14 @@ const {
                   </p>
                 </div>
                 <div className="my-1 h-px bg-[#E2E8F0]" />
-                <ProfileMenuItem
+                {/* <ProfileMenuItem
                   icon={<UserRound className="h-4 w-4" />}
                   label="View profile"
-                />
-                <ProfileMenuItem
+                /> */}
+                {/* <ProfileMenuItem
                   icon={<Settings className="h-4 w-4" />}
                   label="Account settings"
-                />
+                /> */}
                 <div className="my-1 h-px bg-[#E2E8F0]" />
              <ProfileMenuItem
     icon={

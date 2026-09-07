@@ -1,39 +1,47 @@
 const express = require("express");
+
 const attendanceController = require("../controllers/attendanceController");
 const authMiddleware = require("../middleware/authMiddleware");
+const attendanceManagerMiddleware = require(
+  "../middleware/attendanceManagerMiddleware"
+);
+const attendanceViewerMiddleware = require(
+  "../middleware/attendanceViewerMiddleware"
+);
 
 const router = express.Router();
 
+
+// Mark or update attendance
 router.post(
-  "/check-in",
+  "/",
   authMiddleware,
-  attendanceController.checkIn
+  attendanceManagerMiddleware,
+  attendanceController.markAttendance
 );
 
-router.post(
-  "/check-out",
+
+// Get all employees + attendance for selected date
+router.get(
+  "/daily",
   authMiddleware,
-  attendanceController.checkOut
+  attendanceViewerMiddleware,
+  attendanceController.getDailyAttendance
+);
+router.get(
+  "/employee/:employeeId/summary",
+  authMiddleware,
+  attendanceViewerMiddleware,
+  attendanceController.getEmployeeAttendanceSummary
 );
 
+// Get one employee's attendance history
 router.get(
-  "/today",
+  "/employee/:employeeId",
   authMiddleware,
-  attendanceController.getTodayAttendance
+  attendanceViewerMiddleware,
+  attendanceController.getEmployeeAttendance
 );
-router.get(
-  "/weekly",
-  authMiddleware,
-  attendanceController.getWeeklyAttendance
-);
-router.get(
-  "/monthly-summary",
-  authMiddleware,
-  attendanceController.getMonthlySummary
-);
-router.get(
-  "/monthly",
-  authMiddleware,
-  attendanceController.getMonthlyAttendance
-);
+
+
 module.exports = router;

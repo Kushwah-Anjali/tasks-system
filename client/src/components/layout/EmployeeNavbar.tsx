@@ -144,8 +144,8 @@ const {
                   <p className="text-xs text-[#64748B]">Employee</p>
                 </div>
                 <div className="my-1 h-px bg-[#E2E8F0]" />
-                <ProfileMenuItem icon={<UserRound className="h-4 w-4" />} label="View profile" />
-                <ProfileMenuItem icon={<Settings className="h-4 w-4" />} label="Account settings" />
+                {/* <ProfileMenuItem icon={<UserRound className="h-4 w-4" />} label="View profile" /> */}
+                {/* <ProfileMenuItem icon={<Settings className="h-4 w-4" />} label="Account settings" /> */}
                 <div className="my-1 h-px bg-[#E2E8F0]" />
 <ProfileMenuItem
     icon={

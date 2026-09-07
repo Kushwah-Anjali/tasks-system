@@ -24,7 +24,8 @@ const authMiddleware = async (req, res, next) => {
                 sessions.user_id,
                 users.role,
                 users.status,
-                users.is_active
+                users.is_active,
+                users.can_manage_attendance
              FROM sessions
              INNER JOIN users
                 ON users.id = sessions.user_id
@@ -56,6 +57,8 @@ const authMiddleware = async (req, res, next) => {
         req.user = {
             id: session.user_id,
             role: session.role,
+            can_manage_attendance:
+                Number(session.can_manage_attendance) === 1,
         };
 
         return next();

@@ -2,59 +2,63 @@ import api from "./api";
 
 import type {
     AttendanceRecord,
-    MonthlyAttendanceSummary,
+    DailyAttendanceRecord,
+    DailyAttendanceResponse,
+    EmployeeMonthlyAttendanceResponse,
+    EmployeeMonthlyAttendanceSummary,
+    EmployeeMonthlyAttendanceSummaryResponse,
+    MarkAttendanceRequest,
+    MarkAttendanceResponse,
 } from "../types/attendance";
 
-interface TodayAttendanceResponse {
-    attendance: AttendanceRecord | null;
-}
+export const markAttendance = async (
+    attendance: MarkAttendanceRequest
+): Promise<AttendanceRecord> => {
+    const response =
+        await api.post<MarkAttendanceResponse>(
+            "/attendance",
+            attendance
+        );
 
-interface MonthlySummaryResponse {
-    summary: MonthlyAttendanceSummary;
-}
+    return response.data.attendance;
+};
 
-interface MessageResponse {
-    message: string;
-}
+export const getDailyAttendance = async (
+    date: string
+): Promise<DailyAttendanceRecord[]> => {
+    const response =
+        await api.get<DailyAttendanceResponse>(
+            "/attendance/daily",
+            { params: { date } }
+        );
 
-export const getTodayAttendance =
-    async (): Promise<
-        AttendanceRecord | null
-    > => {
-        const response =
-            await api.get<TodayAttendanceResponse>(
-                "/attendance/today"
-            );
+    return response.data.attendance;
+};
 
-        return response.data.attendance;
-    };
+export const getEmployeeAttendance = async (
+    employeeId: number,
+    year: number,
+    month: number
+): Promise<AttendanceRecord[]> => {
+    const response =
+        await api.get<EmployeeMonthlyAttendanceResponse>(
+            `/attendance/employee/${employeeId}`,
+            { params: { year, month } }
+        );
 
-export const getMonthlySummary =
-    async (): Promise<MonthlyAttendanceSummary> => {
-        const response =
-            await api.get<MonthlySummaryResponse>(
-                "/attendance/monthly-summary"
-            );
+    return response.data.attendance;
+};
 
-        return response.data.summary;
-    };
+export const getEmployeeAttendanceSummary = async (
+    employeeId: number,
+    year: number,
+    month: number
+): Promise<EmployeeMonthlyAttendanceSummary> => {
+    const response =
+        await api.get<EmployeeMonthlyAttendanceSummaryResponse>(
+            `/attendance/employee/${employeeId}/summary`,
+            { params: { year, month } }
+        );
 
-export const checkIn =
-    async (): Promise<MessageResponse> => {
-        const response =
-            await api.post<MessageResponse>(
-                "/attendance/check-in"
-            );
-
-        return response.data;
-    };
-
-export const checkOut =
-    async (): Promise<MessageResponse> => {
-        const response =
-            await api.post<MessageResponse>(
-                "/attendance/check-out"
-            );
-
-        return response.data;
-    };
+    return response.data.summary;
+};

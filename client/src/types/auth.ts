@@ -7,6 +7,7 @@ export interface AuthUser {
     full_name: string;
     email: string;
     role: UserRole;
+    can_manage_attendance: boolean;
 }
 
 export interface LoginResponse {

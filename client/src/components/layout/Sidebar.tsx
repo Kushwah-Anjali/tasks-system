@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import type { AuthUser } from "../../types/auth";
 import {
   LayoutDashboard,
   Users,
   CalendarCheck2,
   ClipboardList,
-  Settings,
+  // Settings,
   X,
 } from "lucide-react";
 
@@ -18,17 +19,24 @@ export interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: <LayoutDashboard className="h-[18px] w-[18px]" />, path: "/dashboard" },
   { label: "Employees", icon: <Users className="h-[18px] w-[18px]" />, path: "/employees" },
-  { label: "Attendance", icon: <CalendarCheck2 className="h-[18px] w-[18px]" /> },
-  { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/tasks" },  { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" /> },
+  { label: "Attendance", icon: <CalendarCheck2 className="h-[18px] w-[18px]" />, path: "/attendance" },
+  // { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/tasks" },  { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" /> },
 ];
 
 interface SidebarProps {
+  user: AuthUser;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const visibleNavItems = navItems.filter(
+    (item) =>
+      item.path !== "/attendance" ||
+      user.role === "manager" ||
+      user.can_manage_attendance === true
+  );
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-[#E2E8F0] bg-white transition-transform duration-300 ease-in-out lg:translate-x-0 ${
@@ -53,7 +61,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Navigation Items */}
       {/* ============================== */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = item.path ? location.pathname === item.path : false;
           const itemClassName = `flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
             isActive

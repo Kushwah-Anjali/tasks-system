@@ -7,12 +7,14 @@ import type { UserRole } from "../../types/auth";
 import { getCurrentUser } from "../../utils/authStorage";
 
 interface ProtectedRouteProps {
-    allowedRole: UserRole;
+    allowedRole?: UserRole;
+    requireAttendanceView?: boolean;
     children: ReactNode;
 }
 
 export default function ProtectedRoute({
     allowedRole,
+    requireAttendanceView = false,
     children,
 }: ProtectedRouteProps) {
     const user = getCurrentUser();
@@ -26,12 +28,28 @@ export default function ProtectedRoute({
         );
     }
 
-    if (user.role !== allowedRole) {
-        const destination =
-            user.role === "manager"
-                ? "/dashboard"
-                : "/employee-dashboard";
+    const destination =
+        user.role === "manager"
+            ? "/dashboard"
+            : "/employee-dashboard";
 
+    if (
+        allowedRole &&
+        user.role !== allowedRole
+    ) {
+        return (
+            <Navigate
+                to={destination}
+                replace
+            />
+        );
+    }
+
+    if (
+        requireAttendanceView &&
+        user.role !== "manager" &&
+        user.can_manage_attendance !== true
+    ) {
         return (
             <Navigate
                 to={destination}

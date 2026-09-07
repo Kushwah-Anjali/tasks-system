@@ -8,7 +8,10 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import EmployeeFilters from "../components/employees/EmployeeFilters";
 import EmployeeTable from "../components/employees/EmployeeTable";
 
-import { getEmployees } from "../services/employeeService";
+import {
+    getEmployees,
+    updateAttendancePermission,
+} from "../services/employeeService";
 
 import type {
     Employee,
@@ -28,6 +31,12 @@ export default function Employees() {
 
     const [errorMessage, setErrorMessage] =
         useState("");
+
+    const [successMessage, setSuccessMessage] =
+        useState("");
+
+    const [updatingPermissionUserId, setUpdatingPermissionUserId] =
+        useState<number | null>(null);
 
     const [search, setSearch] =
         useState("");
@@ -132,6 +141,45 @@ export default function Employees() {
         setStatus("");
     };
 
+    const handleAttendancePermissionChange = async (
+        employee: Employee,
+        canManageAttendance: boolean
+    ) => {
+        try {
+            setUpdatingPermissionUserId(employee.id);
+            setErrorMessage("");
+            setSuccessMessage("");
+
+            await updateAttendancePermission(
+                employee.id,
+                canManageAttendance
+            );
+
+            setEmployees((currentEmployees) =>
+                currentEmployees.map((item) =>
+                    item.id === employee.id
+                        ? {
+                              ...item,
+                              canManageAttendance,
+                          }
+                        : item
+                )
+            );
+
+            setSuccessMessage(
+                canManageAttendance
+                    ? `${employee.fullName} can now manage attendance.`
+                    : `Attendance management access removed from ${employee.fullName}.`
+            );
+        } catch {
+            setErrorMessage(
+                `Unable to update attendance access for ${employee.fullName}.`
+            );
+        } finally {
+            setUpdatingPermissionUserId(null);
+        }
+    };
+
     if (!user) return null;
 
     return (
@@ -142,11 +190,16 @@ export default function Employees() {
                 </h1>
 
                 <p className="mt-1 text-sm text-[#64748B]">
-                    Manage your
-                    organization&apos;s
-                    employees.
+                    Manage your organization&apos;s
+                    employees and attendance access.
                 </p>
             </div>
+
+            {successMessage ? (
+                <div className="mb-5 rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-[#16A34A]">
+                    {successMessage}
+                </div>
+            ) : null}
 
             {errorMessage ? (
                 <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -179,6 +232,12 @@ export default function Employees() {
                         filteredEmployees
                     }
                     isLoading={isLoading}
+                    updatingPermissionUserId={
+                        updatingPermissionUserId
+                    }
+                    onAttendancePermissionChange={
+                        handleAttendancePermissionChange
+                    }
                 />
             </div>
         </DashboardLayout>

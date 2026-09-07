@@ -5,6 +5,7 @@ export type EmployeeStatus =
 
 export interface Employee {
     id: number;
+    employeeId: number;
     fullName: string;
     email: string;
     registrationNumber: string;
@@ -12,10 +13,12 @@ export interface Employee {
     designation: string | null;
     joiningDate: string | null;
     status: EmployeeStatus;
+    canManageAttendance: boolean;
 }
 
 export interface EmployeeApiResponse {
     id: number;
+    employee_id: number;
     registration_number: string;
     date_of_birth: string | null;
     designation: string | null;
@@ -25,6 +28,7 @@ export interface EmployeeApiResponse {
     phone: string | null;
     account_status: string;
     is_active: number;
+    can_manage_attendance: number | boolean;
     department_id: number | null;
     department: string | null;
 }

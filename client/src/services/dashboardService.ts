@@ -3,36 +3,47 @@ import api from "./api";
 export interface DashboardStats {
     totalEmployees: number;
     presentToday: number;
-    onLeave: number;
+    absentToday: number;
     openTasks: number;
 }
 
-export type RecentAttendanceStatus = "present" | "late" | "absent";
+export type RecentAttendanceStatus =
+    | "present"
+    | "absent"
+    | "half_day";
 
 export interface RecentAttendanceRecord {
     id: number;
     employee_id: number;
     attendance_date: string;
-    check_in: string | null;
-    check_out: string | null;
     status: RecentAttendanceStatus;
+    is_late: 0 | 1;
+    late_time: string | null;
     full_name: string;
     designation: string | null;
+    marked_by_name: string | null;
 }
 
 interface RecentAttendanceResponse {
     attendance: RecentAttendanceRecord[];
 }
 
-export const getDashboardStats = async (): Promise<DashboardStats> => {
-    const response = await api.get<DashboardStats>("/dashboard/stats");
-    return response.data;
-};
+export const getDashboardStats =
+    async (): Promise<DashboardStats> => {
+        const response =
+            await api.get<DashboardStats>(
+                "/dashboard/stats"
+            );
 
-export const getRecentAttendance = async (): Promise<RecentAttendanceRecord[]> => {
-    const response = await api.get<RecentAttendanceResponse>(
-        "/dashboard/recent-attendance"
-    );
+        return response.data;
+    };
 
-    return response.data.attendance;
-};
+export const getRecentAttendance =
+    async (): Promise<RecentAttendanceRecord[]> => {
+        const response =
+            await api.get<RecentAttendanceResponse>(
+                "/dashboard/recent-attendance"
+            );
+
+        return response.data.attendance;
+    };

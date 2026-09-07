@@ -3,17 +3,17 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   CalendarCheck2,
-  CalendarDays,
   ClipboardList,
   UserRound,
-  Settings,
   X,
 } from "lucide-react";
+import { getCurrentUser } from "../../utils/authStorage";
 
 export interface EmployeeNavItem {
   label: string;
   icon: ReactNode;
   path?: string;
+  requiresAttendanceManagement?: boolean;
 }
 
 const navItems: EmployeeNavItem[] = [
@@ -22,11 +22,13 @@ const navItems: EmployeeNavItem[] = [
     icon: <LayoutDashboard className="h-[18px] w-[18px]" />,
     path: "/employee-dashboard",
   },
-  { label: "Attendance", icon: <CalendarCheck2 className="h-[18px] w-[18px]" /> },
-  { label: "Leave", icon: <CalendarDays className="h-[18px] w-[18px]" /> },
+  {
+    label: "Attendance",
+    icon: <CalendarCheck2 className="h-[18px] w-[18px]" />,
+    path: "/attendance",
+    requiresAttendanceManagement: true,
+  },
   { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/employee-tasks" },
-  { label: "Profile", icon: <UserRound className="h-[18px] w-[18px]" /> },
-  { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" /> },
 ];
 
 interface EmployeeSidebarProps {
@@ -36,6 +38,12 @@ interface EmployeeSidebarProps {
 
 export default function EmployeeSidebar({ isOpen, onClose }: EmployeeSidebarProps) {
   const location = useLocation();
+  const user = getCurrentUser();
+  const visibleNavItems = navItems.filter(
+    (item) =>
+      !item.requiresAttendanceManagement ||
+      user?.can_manage_attendance === true
+  );
 
   return (
     <aside
@@ -61,7 +69,7 @@ export default function EmployeeSidebar({ isOpen, onClose }: EmployeeSidebarProp
       {/* Navigation Items */}
       {/* ============================== */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = item.path ? location.pathname === item.path : false;
           const itemClassName = `flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
             isActive
