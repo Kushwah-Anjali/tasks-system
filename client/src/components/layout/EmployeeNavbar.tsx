@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, Bell, ChevronDown, Settings, LogOut, UserRound } from "lucide-react";
+import { Menu, Bell, ChevronDown, 
+  // Settings,
+   LogOut, 
+  //  UserRound 
+  } from "lucide-react";
 import type { ReactNode } from "react";
 import { useLogout } from "../../hooks/useLogout";
 function NotificationRow({ title, time }: { title: string; time: string }) {

@@ -5,7 +5,7 @@ import {
   LayoutDashboard,
   Users,
   CalendarCheck2,
-  ClipboardList,
+  // ClipboardList,
   // Settings,
   X,
 } from "lucide-react";
