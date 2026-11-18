@@ -1,58 +1,27 @@
-import type { TaskStatus } from "../../types/task";
-interface StatusConfig {
-    label: string;
-    className: string;
-}
+import type { HandoffStatus, TaskStatus } from "../../types/task";
+import StatusBadge, { type StatusTone } from "../ui/StatusBadge";
 
-const statusConfig: Record<
-    TaskStatus,
-    StatusConfig
-> = {
-    assigned: {
-        label: "Assigned",
-        className:
-            "bg-slate-100 text-slate-600",
-    },
-
-    in_progress: {
-        label: "In Progress",
-        className:
-            "bg-blue-50 text-blue-600",
-    },
-
-    submitted: {
-        label: "Submitted",
-        className:
-            "bg-amber-50 text-amber-600",
-    },
-
-    completed: {
-        label: "Completed",
-        className:
-            "bg-green-50 text-green-600",
-    },
-
-    overdue: {
-        label: "Overdue",
-        className:
-            "bg-red-50 text-red-600",
-    },
+const statuses: Record<TaskStatus, { label: string; tone: StatusTone }> = {
+    assigned: { label: "Assigned", tone: "neutral" },
+    in_progress: { label: "In Progress", tone: "blue" },
+    submitted: { label: "Submitted", tone: "info" },
+    under_review: { label: "Under Review", tone: "info" },
+    changes_required: { label: "Changes Required", tone: "orange" },
+    completed: { label: "Completed", tone: "success" },
 };
 
-interface TaskStatusBadgeProps {
-    status: TaskStatus;
+export default function TaskStatusBadge({ status, prominent = false }: { status: TaskStatus; prominent?: boolean }) {
+    const config = statuses[status];
+    return <StatusBadge tone={config.tone} prominent={prominent}>{config.label}</StatusBadge>;
 }
 
-export default function TaskStatusBadge({
-    status,
-}: TaskStatusBadgeProps) {
-    const config = statusConfig[status];
+const responses: Record<HandoffStatus, { label: string; tone: StatusTone }> = {
+    pending: { label: "Pending", tone: "warning" },
+    accepted: { label: "Accepted", tone: "success" },
+    rejected: { label: "Rejected", tone: "danger" },
+};
 
-    return (
-        <span
-            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${config.className}`}
-        >
-            {config.label}
-        </span>
-    );
+export function ResponseStatusBadge({ status, prominent = false }: { status: HandoffStatus; prominent?: boolean }) {
+    const config = responses[status];
+    return <StatusBadge tone={config.tone} prominent={prominent}>{config.label}</StatusBadge>;
 }

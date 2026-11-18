@@ -1,33 +1,12 @@
-import type {
-    EmployeeStatus,
-} from "../../types/employee";
+import type { EmployeeStatus } from "../../types/employee";
+import StatusBadge, { type StatusTone } from "../ui/StatusBadge";
 
-const statusStyles: Record<
-    EmployeeStatus,
-    string
-> = {
-    Active:
-        "bg-green-50 text-[#16A34A]",
-
-    Inactive:
-        "bg-red-50 text-[#DC2626]",
-
-    "On Leave":
-        "bg-amber-50 text-[#D97706]",
+const tones: Record<EmployeeStatus, StatusTone> = {
+    Active: "success",
+    Inactive: "danger",
+    "On Leave": "warning",
 };
 
-interface EmployeeStatusBadgeProps {
-    status: EmployeeStatus;
-}
-
-export default function EmployeeStatusBadge({
-    status,
-}: EmployeeStatusBadgeProps) {
-    return (
-        <span
-            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[status]}`}
-        >
-            {status}
-        </span>
-    );
+export default function EmployeeStatusBadge({ status }: { status: EmployeeStatus }) {
+    return <StatusBadge tone={tones[status]}>{status}</StatusBadge>;
 }

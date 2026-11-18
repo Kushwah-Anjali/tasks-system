@@ -95,9 +95,9 @@ export default function Modal({
                             duration: 0.2,
                             ease: "easeOut",
                         }}
-                        className="relative z-10 max-h-full w-full max-w-md overflow-y-auto rounded-2xl border border-[#E2E8F0] bg-white shadow-xl"
+                        className="app-modal relative z-10 max-h-full w-full max-w-xl overflow-y-auto rounded-2xl border border-[#E2E8F0] bg-white shadow-xl"
                     >
-                        <div className="sticky top-0 flex items-center justify-between border-b border-[#E2E8F0] bg-white px-6 py-4">
+                        <div className="sticky top-0 flex items-center justify-between border-b border-[#E2E8F0] bg-slate-50 px-6 py-5">
                             <h2
                                 id="modal-title"
                                 className="text-base font-semibold text-[#0F172A]"

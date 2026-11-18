@@ -12,12 +12,14 @@ import EmployeeSidebar from "./EmployeeSidebar";
 
 interface EmployeeDashboardLayoutProps {
     children: ReactNode;
+    employeeId: number;
     employeeName: string;
     employeeInitials: string;
 }
 
 export default function EmployeeDashboardLayout({
     children,
+    employeeId,
     employeeName,
     employeeInitials,
 }: EmployeeDashboardLayoutProps) {
@@ -29,7 +31,7 @@ export default function EmployeeDashboardLayout({
     };
 
     return (
-        <div className="min-h-screen w-full bg-[#F8FAFC]">
+        <div className="app-shell min-h-screen w-full bg-[#F8FAFC]">
             <AnimatePresence>
                 {sidebarOpen ? (
                     <motion.button
@@ -51,9 +53,11 @@ export default function EmployeeDashboardLayout({
 
             <div className="lg:pl-[260px]">
                 <EmployeeNavbar
+                    key={employeeId}
                     onMenuClick={() =>
                         setSidebarOpen(true)
                     }
+                    employeeId={employeeId}
                     employeeName={
                         employeeName
                     }

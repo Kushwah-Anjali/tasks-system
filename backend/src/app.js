@@ -9,7 +9,9 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const taskRoutes = require("./routes/taskRoutes");
-
+const notificationRoutes =
+  require("./routes/notificationRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 app.use(cors({
   origin: [
     "http://localhost:5173",
@@ -32,11 +34,15 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/tasks", taskRoutes);
-
+app.use(
+  "/api/notifications",
+  notificationRoutes
+);
+app.use("/api/ai", aiRoutes);
 app.use((req, res) => {
-    return res.status(404).json({
-        message: "API route not found",
-    });
+  return res.status(404).json({
+    message: "API route not found",
+  });
 });
- 
+
 module.exports = app;

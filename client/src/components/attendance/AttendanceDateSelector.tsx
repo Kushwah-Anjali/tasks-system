@@ -10,7 +10,7 @@ export default function AttendanceDateSelector({
     onChange,
 }: AttendanceDateSelectorProps) {
     return (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
             <label
                 htmlFor="attendanceDate"
                 className="text-sm font-semibold text-[#0F172A]"

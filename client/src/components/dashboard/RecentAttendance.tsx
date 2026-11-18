@@ -55,7 +55,7 @@ export default function RecentAttendance({
 }: RecentAttendanceProps) {
     return (
         <div className="rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
-            <div className="border-b border-[#E2E8F0] px-5 py-4 sm:px-6">
+            <div className="border-b border-[#E2E8F0] bg-slate-50 px-5 py-5 sm:px-6">
                 <h2 className="text-base font-semibold text-[#0F172A]">
                     Today&apos;s Attendance
                 </h2>
@@ -65,19 +65,19 @@ export default function RecentAttendance({
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-left">
+                <table className="app-table w-full min-w-[720px] text-left">
                     <thead>
                         <tr className="border-b border-[#E2E8F0]">
-                            <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Employee
                             </th>
-                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Status
                             </th>
-                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Late
                             </th>
-                            <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Marked By
                             </th>
                         </tr>
@@ -99,10 +99,10 @@ export default function RecentAttendance({
                                     colSpan={4}
                                     className="px-6 py-12 text-center"
                                 >
-                                    <p className="text-sm font-medium text-[#0F172A]">
+                                    <p className="text-base font-semibold text-[#0F172A]">
                                         No attendance recorded today
                                     </p>
-                                    <p className="mt-1 text-xs text-[#94A3B8]">
+                                    <p className="mt-1 text-xs text-[#64748B]">
                                         Attendance records will appear here after they are marked.
                                     </p>
                                 </td>
@@ -126,10 +126,10 @@ export default function RecentAttendance({
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-sm font-medium text-[#0F172A]">
+                                                    <p className="text-base font-semibold text-[#0F172A]">
                                                         {row.full_name}
                                                     </p>
-                                                    <p className="text-xs text-[#94A3B8]">
+                                                    <p className="text-xs text-[#64748B]">
                                                         {row.designation ||
                                                             "Employee"}
                                                     </p>
@@ -146,15 +146,17 @@ export default function RecentAttendance({
                                         </td>
 
                                         <td className="px-3 py-3.5 text-sm text-[#334155]">
+                                            <span className={row.is_late === 1 ? "inline-flex rounded-lg border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-800" : "text-sm text-slate-500"}>
                                             {row.is_late === 1
-                                                ? `Yes${
+                                                ? `Late${
                                                       row.late_time
                                                           ? ` · ${formatLateTime(
                                                                 row.late_time
                                                             )}`
                                                           : ""
                                                   }`
-                                                : "No"}
+                                                : "On time"}
+                                            </span>
                                         </td>
 
                                         <td className="px-6 py-3.5 text-right text-sm text-[#334155]">

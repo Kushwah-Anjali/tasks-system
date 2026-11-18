@@ -3,112 +3,6 @@ const crypto = require("crypto");
 
 const db = require("../config/db");
 
-const register = async (userData) => {
-    const {
-        full_name,
-        email,
-        phone,
-        password,
-        date_of_birth,
-        department_id,
-        designation,
-        joining_date,
-    } = userData;
-
-    if (
-        typeof full_name !== "string" ||
-        !full_name.trim() ||
-        typeof email !== "string" ||
-        !email.trim() ||
-        typeof password !== "string" ||
-        password.length < 6
-    ) {
-        throw new Error(
-            "Full name, valid email and password are required"
-        );
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const connection = await db.promise().getConnection();
-
-    try {
-        await connection.beginTransaction();
-
-        const [existingUsers] = await connection.query(
-            "SELECT id FROM users WHERE email = ? LIMIT 1",
-            [normalizedEmail]
-        );
-
-        if (existingUsers.length > 0) {
-            throw new Error("Email already exists");
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const [userResult] = await connection.query(
-            `INSERT INTO users
-                (
-                    full_name,
-                    email,
-                    phone,
-                    password,
-                    role,
-                    status,
-                    is_active
-                )
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-                full_name.trim(),
-                normalizedEmail,
-                phone || null,
-                hashedPassword,
-                "employee",
-                "approved",
-                1,
-            ]
-        );
-
-        const userId = userResult.insertId;
-
-        const registrationNumber =
-            `EMP-${new Date().getFullYear()}-${String(userId)
-                .padStart(4, "0")}`;
-
-        await connection.query(
-            `INSERT INTO employees
-                (
-                    user_id,
-                    registration_number,
-                    date_of_birth,
-                    department_id,
-                    designation,
-                    joining_date
-                )
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-                userId,
-                registrationNumber,
-                date_of_birth || null,
-                department_id || null,
-                designation || null,
-                joining_date || null,
-            ]
-        );
-
-        await connection.commit();
-
-        return {
-            message: "Registration completed successfully",
-            registrationNumber,
-        };
-    } catch (error) {
-        await connection.rollback();
-        throw error;
-    } finally {
-        connection.release();
-    }
-};
-
 const login = async ({ email, password }) => {
     const normalizedEmail = email.trim().toLowerCase();
 
@@ -198,7 +92,6 @@ const logout = async (sessionToken) => {
 };
 
 module.exports = {
-    register,
     login,
     logout,
 };

@@ -1,27 +1,45 @@
+import { isAxiosError } from "axios";
+import { getDepartments } from "../services/departmentService";
+import type { Department } from "../types/department";
 import {
     useEffect,
+    useRef,
+    type FormEvent,
     useMemo,
     useState,
 } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
 import EmployeeFilters from "../components/employees/EmployeeFilters";
 import EmployeeTable from "../components/employees/EmployeeTable";
+import AppModal from "../components/ui/AppModal";
 
 import {
     getEmployees,
+    updateEmployee,
+    deleteEmployee,
     updateAttendancePermission,
 } from "../services/employeeService";
 
 import type {
     Employee,
     EmployeeStatus,
+    UpdateEmployeeInput,
 } from "../types/employee";
 
 import { getCurrentUser } from "../utils/authStorage";
 
+type EmployeeModalMode =
+    | "view"
+    | "edit"
+    | "delete"
+    | null;
+
 export default function Employees() {
     const user = getCurrentUser();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [employees, setEmployees] =
         useState<Employee[]>([]);
@@ -32,11 +50,15 @@ export default function Employees() {
     const [errorMessage, setErrorMessage] =
         useState("");
 
-    const [successMessage, setSuccessMessage] =
-        useState("");
+    const [successMessage, setSuccessMessage] = useState(() => {
+        const state = location.state as { successMessage?: string } | null;
+        return state?.successMessage || "";
+    });
 
-    const [updatingPermissionUserId, setUpdatingPermissionUserId] =
-        useState<number | null>(null);
+    const [
+        updatingPermissionUserId,
+        setUpdatingPermissionUserId,
+    ] = useState<number | null>(null);
 
     const [search, setSearch] =
         useState("");
@@ -47,6 +69,36 @@ export default function Employees() {
     const [status, setStatus] = useState<
         EmployeeStatus | ""
     >("");
+
+    const [
+        selectedEmployee,
+        setSelectedEmployee,
+    ] = useState<Employee | null>(null);
+
+    const [
+        modalMode,
+        setModalMode,
+    ] = useState<EmployeeModalMode>(null);
+
+    const [form, setForm] = useState<UpdateEmployeeInput | null>(null);
+    const [departmentOptions, setDepartmentOptions] = useState<Department[]>([]);
+    const [departmentsError, setDepartmentsError] = useState("");
+    const [modalError, setModalError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const submitting = useRef(false);
+
+    useEffect(() => {
+        const state = location.state as { successMessage?: string } | null;
+        if (state?.successMessage) {
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location.pathname, location.state, navigate]);
+
+    useEffect(() => {
+        getDepartments().then(setDepartmentOptions).catch(() => {
+            setDepartmentsError("Unable to load departments. The current department will be preserved.");
+        });
+    }, []);
 
     useEffect(() => {
         const loadEmployees = async () => {
@@ -114,12 +166,12 @@ export default function Employees() {
                     const matchesDepartment =
                         !department ||
                         employee.department ===
-                            department;
+                        department;
 
                     const matchesStatus =
                         !status ||
                         employee.status ===
-                            status;
+                        status;
 
                     return (
                         matchesSearch &&
@@ -141,42 +193,104 @@ export default function Employees() {
         setStatus("");
     };
 
-    const handleAttendancePermissionChange = async (
-        employee: Employee,
-        canManageAttendance: boolean
-    ) => {
+    const handleAttendancePermissionChange =
+        async (
+            employee: Employee,
+            canManageAttendance: boolean
+        ) => {
+            try {
+                setUpdatingPermissionUserId(
+                    employee.id
+                );
+
+                setErrorMessage("");
+                setSuccessMessage("");
+
+                await updateAttendancePermission(
+                    employee.id,
+                    canManageAttendance
+                );
+
+                setEmployees(
+                    (currentEmployees) =>
+                        currentEmployees.map(
+                            (item) =>
+                                item.id ===
+                                    employee.id
+                                    ? {
+                                        ...item,
+                                        canManageAttendance,
+                                    }
+                                    : item
+                        )
+                );
+
+                setSuccessMessage(
+                    canManageAttendance
+                        ? `${employee.fullName} can now manage attendance.`
+                        : `Attendance management access removed from ${employee.fullName}.`
+                );
+            } catch {
+                setErrorMessage(
+                    `Unable to update attendance access for ${employee.fullName}.`
+                );
+            } finally {
+                setUpdatingPermissionUserId(
+                    null
+                );
+            }
+        };
+
+    const openEmployeeModal = (employee: Employee, mode: EmployeeModalMode) => {
+        setSelectedEmployee(employee);
+        setModalMode(mode);
+        setModalError("");
+        setSuccessMessage("");
+        setForm({
+            fullName: employee.fullName, email: employee.email, phone: employee.phone,
+            registrationNumber: employee.registrationNumber, departmentId: employee.departmentId,
+            designation: employee.designation, joiningDate: employee.joiningDate?.slice(0, 10) || null,
+            dateOfBirth: employee.dateOfBirth?.slice(0, 10) || null, isActive: employee.status === "Active",
+        });
+    };
+    const handleViewEmployee = (employee: Employee) => openEmployeeModal(employee, "view");
+    const handleEditEmployee = (employee: Employee) => openEmployeeModal(employee, "edit");
+    const handleDeleteEmployee = (employee: Employee) => openEmployeeModal(employee, "delete");
+    const handleCloseModal = () => {
+        if (submitting.current) return;
+        setModalMode(null);
+        setSelectedEmployee(null);
+        setForm(null);
+        setModalError("");
+    };
+    const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
+        event?.preventDefault();
+        if (!selectedEmployee || !form || submitting.current) return;
+        submitting.current = true;
+        setIsSubmitting(true);
+        setModalError("");
         try {
-            setUpdatingPermissionUserId(employee.id);
-            setErrorMessage("");
-            setSuccessMessage("");
-
-            await updateAttendancePermission(
-                employee.id,
-                canManageAttendance
-            );
-
-            setEmployees((currentEmployees) =>
-                currentEmployees.map((item) =>
-                    item.id === employee.id
-                        ? {
-                              ...item,
-                              canManageAttendance,
-                          }
-                        : item
-                )
-            );
-
-            setSuccessMessage(
-                canManageAttendance
-                    ? `${employee.fullName} can now manage attendance.`
-                    : `Attendance management access removed from ${employee.fullName}.`
-            );
-        } catch {
-            setErrorMessage(
-                `Unable to update attendance access for ${employee.fullName}.`
-            );
+            const userId = selectedEmployee.id;
+            if (modalMode === "edit") {
+                const updated = await updateEmployee(userId, form);
+                setEmployees(current => current.map(employee => employee.id === userId
+                    ? { ...updated, canManageAttendance: employee.canManageAttendance } : employee));
+                setSuccessMessage("Employee updated successfully.");
+            } else if (modalMode === "delete") {
+                await deleteEmployee(userId);
+                setEmployees(current => current.filter(employee => employee.id !== userId));
+                setSuccessMessage("Employee deleted successfully.");
+            }
+            setModalMode(null);
+            setSelectedEmployee(null);
+            setForm(null);
+        } catch (error) {
+            setModalError(isAxiosError<{ message?: string }>(error)
+                ? error.response?.data?.message || "Unable to complete employee action. Please try again."
+                : "Unable to complete employee action. Please try again.");
         } finally {
-            setUpdatingPermissionUserId(null);
+            submitting.current = false;
+            setIsSubmitting(false);
         }
     };
 
@@ -215,9 +329,7 @@ export default function Employees() {
                     onDepartmentChange={
                         setDepartment
                     }
-                    departments={
-                        departments
-                    }
+                    departments={departments}
                     status={status}
                     onStatusChange={
                         setStatus
@@ -225,6 +337,7 @@ export default function Employees() {
                     onClearFilters={
                         handleClearFilters
                     }
+                    onAddEmployee={() => navigate("/employees/new")}
                 />
 
                 <EmployeeTable
@@ -238,8 +351,116 @@ export default function Employees() {
                     onAttendancePermissionChange={
                         handleAttendancePermissionChange
                     }
+                    onViewEmployee={
+                        handleViewEmployee
+                    }
+                    onEditEmployee={
+                        handleEditEmployee
+                    }
+                    onDeleteEmployee={
+                        handleDeleteEmployee
+                    }
                 />
             </div>
+
+            <AppModal
+                open={
+                    Boolean(modalMode) &&
+                    Boolean(selectedEmployee)
+                }
+                onClose={handleCloseModal}
+                title={
+                    modalMode === "view"
+                        ? "Employee Details"
+                        : modalMode === "edit"
+                            ? "Edit Employee"
+                            : "Delete Employee"
+                }
+                description={
+                    selectedEmployee
+                        ? selectedEmployee.fullName
+                        : undefined
+                }
+                size={
+                    modalMode === "edit"
+                        ? "lg"
+                        : "md"
+                }
+            >
+                {modalError && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{modalError}</p>}
+                {modalMode === "view" && selectedEmployee && (
+                    <dl className="grid gap-5 sm:grid-cols-2">
+                        {[
+                            ["Full Name", selectedEmployee.fullName], ["Email", selectedEmployee.email],
+                            ["Phone", selectedEmployee.phone], ["Registration Number", selectedEmployee.registrationNumber],
+                            ["Department", selectedEmployee.department], ["Designation", selectedEmployee.designation],
+                            ["Joining Date", selectedEmployee.joiningDate], ["Date of Birth", selectedEmployee.dateOfBirth],
+                            ["Status", selectedEmployee.status],
+                            ["Attendance Access", (employees.find(item => item.id === selectedEmployee.id) || selectedEmployee).canManageAttendance ? "Granted" : "Not granted"],
+                        ].map(([label, value]) => (
+                            <div key={label} className="rounded-xl border border-[#E2E8F0] bg-slate-50 p-4">
+                                <dt className="text-xs font-medium text-[#64748B]">{label}</dt>
+                                <dd className="mt-1 break-words text-sm font-medium text-[#0F172A]">{value || "?"}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                )}
+                {modalMode === "edit" && form && (
+                    <form onSubmit={handleSubmit}>
+                        <fieldset disabled={isSubmitting} className="grid gap-4 sm:grid-cols-2">
+                            {([
+                                ["fullName", "Full Name", "text", true], ["email", "Email", "email", true],
+                                ["phone", "Phone", "tel", false], ["registrationNumber", "Registration Number", "text", true],
+                                ["designation", "Designation", "text", false], ["joiningDate", "Joining Date", "date", false],
+                                ["dateOfBirth", "Date of Birth", "date", false],
+                            ] as const).map(([key, label, type, required]) => (
+                                <label key={key} className="text-sm font-medium text-[#334155]">
+                                    {label}
+                                    <input type={type} required={required} value={form[key] || ""}
+                                        onChange={event => setForm({ ...form, [key]: event.target.value })}
+                                        className="mt-1 block w-full rounded-lg border border-[#CBD5E1] px-3 py-2" />
+                                </label>
+                            ))}
+                            <label className="text-sm font-medium text-[#334155]">
+                                Department
+                                <select value={form.departmentId ?? ""} disabled={Boolean(departmentsError)}
+                                    onChange={event => setForm({ ...form, departmentId: event.target.value ? Number(event.target.value) : null })}
+                                    className="mt-1 block w-full rounded-lg border border-[#CBD5E1] px-3 py-2">
+                                    <option value="">No department</option>
+                                    {form.departmentId !== null && !departmentOptions.some(item => item.id === form.departmentId) && (
+                                        <option value={form.departmentId}>{selectedEmployee?.department || "Current department"}</option>
+                                    )}
+                                    {departmentOptions.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+                                </select>
+                            </label>
+                            <label className="text-sm font-medium text-[#334155]">
+                                Status
+                                <select value={form.isActive ? "active" : "inactive"}
+                                    onChange={event => setForm({ ...form, isActive: event.target.value === "active" })}
+                                    className="mt-1 block w-full rounded-lg border border-[#CBD5E1] px-3 py-2">
+                                    <option value="active">Active</option><option value="inactive">Inactive</option>
+                                </select>
+                            </label>
+                        </fieldset>
+                        {departmentsError && <p role="alert" className="mt-3 text-sm text-amber-700">{departmentsError}</p>}
+                        <div className="mt-5 flex justify-end gap-2">
+                            <button type="button" disabled={isSubmitting} onClick={handleCloseModal} className="h-10 rounded-lg border border-[#CBD5E1] px-4 text-sm font-semibold">Cancel</button>
+                            <button type="submit" disabled={isSubmitting} className="h-10 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white disabled:opacity-50">{isSubmitting ? "Saving..." : "Save Changes"}</button>
+                        </div>
+                    </form>
+                )}
+                {modalMode === "delete" && selectedEmployee && (
+                    <div className="space-y-4">
+                        <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                            Delete {selectedEmployee.fullName}? This permanently deletes their account and employee profile. This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <button type="button" disabled={isSubmitting} onClick={handleCloseModal} className="h-10 rounded-lg border border-[#CBD5E1] px-4 text-sm font-semibold">Cancel</button>
+                            <button type="button" disabled={isSubmitting} onClick={() => void handleSubmit()} className="h-10 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white disabled:opacity-50">{isSubmitting ? "Deleting..." : "Delete Employee"}</button>
+                        </div>
+                    </div>
+                )}
+            </AppModal>
         </DashboardLayout>
     );
 }

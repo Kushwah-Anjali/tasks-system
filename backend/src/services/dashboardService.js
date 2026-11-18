@@ -20,10 +20,7 @@ const getDashboardStats = async () => {
 
     const [[employeeResult]] = await db.promise().query(
         `SELECT COUNT(*) AS totalEmployees
-         FROM users
-         WHERE role = 'employee'
-           AND status = 'approved'
-           AND is_active = 1`
+     FROM employees`
     );
 
     const [[attendanceResult]] = await db.promise().query(

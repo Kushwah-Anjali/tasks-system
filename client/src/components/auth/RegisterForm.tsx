@@ -119,6 +119,7 @@ interface RegisterFormProps {
   onSubmit: (values: RegisterFormValues) => void;
   isSubmitting?: boolean;
   errorMessage?: string;
+  onCancel?: () => void;
 }
 
 export default function RegisterForm({
@@ -127,6 +128,7 @@ export default function RegisterForm({
   onSubmit,
   isSubmitting = false,
   errorMessage,
+  onCancel,
 }: RegisterFormProps) {
   const {
     register,
@@ -401,12 +403,22 @@ export default function RegisterForm({
         {isSubmitting ? (
           <span className="flex items-center gap-2">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-            Creating account
+            Creating employee
           </span>
         ) : (
-          "Create account"
+          "Create Employee"
         )}
       </motion.button>
+      {onCancel ? (
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="flex h-11 w-full items-center justify-center rounded-xl border border-[#CBD5E1] bg-white text-sm font-semibold text-[#334155] transition-colors hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cancel
+        </button>
+      ) : null}
     </form>
   );
 }

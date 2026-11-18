@@ -31,7 +31,7 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="app-shell min-h-screen bg-[#F8FAFC]">
             <AnimatePresence>
                 {sidebarOpen ? (
                     <motion.button
@@ -56,6 +56,7 @@ export default function DashboardLayout({
 
             <div className="lg:pl-[260px]">
                 <Navbar
+                    key={user.id}
                     user={user}
                     onMenuClick={() =>
                         setSidebarOpen(true)

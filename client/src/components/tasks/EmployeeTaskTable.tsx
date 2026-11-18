@@ -1,4 +1,3 @@
-import TaskProgressBar from "./TaskProgressBar";
 import TaskStatusBadge from "./TaskStatusBadge";
 
 import type { Task } from "../../types/task";
@@ -33,30 +32,26 @@ export default function EmployeeTaskTable({
     return (
         <div className="rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
             <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-left">
+                <table className="app-table w-full min-w-[720px] text-left">
                     <thead>
                         <tr className="border-b border-[#E2E8F0]">
-                            <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Task
                             </th>
 
-                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Assigned Date
                             </th>
 
-                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Due Date
                             </th>
 
-                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Status
                             </th>
 
-                            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
-                                Progress
-                            </th>
-
-                            <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                            <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#64748B]">
                                 Action
                             </th>
                         </tr>
@@ -66,14 +61,14 @@ export default function EmployeeTaskTable({
                         {tasks.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={6}
+                                    colSpan={5}
                                     className="px-6 py-16 text-center"
                                 >
-                                    <p className="text-sm font-medium text-[#0F172A]">
+                                    <p className="text-base font-semibold text-[#0F172A]">
                                         No tasks assigned yet
                                     </p>
 
-                                    <p className="mt-1 text-xs text-[#94A3B8]">
+                                    <p className="mt-1 text-xs text-[#64748B]">
                                         New tasks assigned to
                                         you will appear here.
                                     </p>
@@ -86,7 +81,7 @@ export default function EmployeeTaskTable({
                                     className="border-b border-[#E2E8F0] transition-colors last:border-none hover:bg-[#F8FAFC]"
                                 >
                                     <td className="px-6 py-3.5">
-                                        <p className="text-sm font-medium text-[#0F172A]">
+                                        <p className="text-base font-semibold text-[#0F172A]">
                                             {task.title}
                                         </p>
                                     </td>
@@ -107,14 +102,6 @@ export default function EmployeeTaskTable({
                                         <TaskStatusBadge
                                             status={
                                                 task.status
-                                            }
-                                        />
-                                    </td>
-
-                                    <td className="px-3 py-3.5">
-                                        <TaskProgressBar
-                                            progress={
-                                                task.progress
                                             }
                                         />
                                     </td>

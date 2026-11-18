@@ -75,13 +75,15 @@ export default function ManagerDashboard() {
     const statCards: StatCard[] = [
         {
             label: "Total Employees",
+            tone: "blue",
             value: value(stats.totalEmployees),
-            delta: "Active employees",
+            delta: "All employees",
             trend: "up",
             icon: <Users className="h-5 w-5" />,
         },
         {
             label: "Present Today",
+            tone: "green",
             value: value(stats.presentToday),
             delta: "Marked present today",
             trend: "up",
@@ -89,6 +91,7 @@ export default function ManagerDashboard() {
         },
         {
             label: "Absent Today",
+            tone: "red",
             value: value(stats.absentToday),
             delta: "Marked absent today",
             trend: "down",
@@ -96,6 +99,7 @@ export default function ManagerDashboard() {
         },
         {
             label: "Open Tasks",
+            tone: "amber",
             value: value(stats.openTasks),
             delta: "Not completed",
             trend: "up",

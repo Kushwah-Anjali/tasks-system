@@ -17,7 +17,7 @@ import type {
     AttendanceEmployee,
     EmployeeMonthlyAttendanceSummary,
 } from "../../types/attendance";
-import Modal from "../tasks/Modal";
+import AppModal from "../ui/AppModal";
 
 interface AttendanceHistoryModalProps {
     employee: AttendanceEmployee | null;
@@ -164,16 +164,17 @@ export default function AttendanceHistoryModal({
     ];
 
     return (
-        <Modal
+        <AppModal
             open={Boolean(employee)}
             title={
                 employee
                     ? `${employee.fullName} — Attendance History`
                     : "Attendance History"
             }
+            size="lg"
             onClose={onClose}
         >
-            <div className="flex max-h-[72vh] flex-col gap-5 overflow-y-auto pr-1">
+            <div className="flex min-w-0 flex-col gap-5">
                 <div className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
                     <div className="flex items-start gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -210,7 +211,7 @@ export default function AttendanceHistoryModal({
                             onChange={(event) =>
                                 setSelectedMonth(event.target.value)
                             }
-                            className="h-11 w-full rounded-xl border border-[#E2E8F0] bg-white pl-10 pr-4 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10"
+                            className="h-11 min-w-0 w-full rounded-xl border border-[#E2E8F0] bg-white pl-10 pr-4 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10"
                         />
                     </div>
                 </div>
@@ -243,7 +244,7 @@ export default function AttendanceHistoryModal({
                 </div>
 
                 <div className="hidden overflow-x-auto rounded-xl border border-[#E2E8F0] sm:block">
-                    <table className="w-full min-w-[660px] text-left">
+                    <table className="app-table w-full min-w-[660px] text-left">
                         <thead>
                             <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                                 {["Date", "Status", "Late", "Late Time", "Marked By"].map(
@@ -320,7 +321,7 @@ export default function AttendanceHistoryModal({
                     </table>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:hidden">
+                <div className="flex min-w-0 flex-col gap-3 break-words sm:hidden">
                     {isLoading ? (
                         <div className="rounded-xl border border-[#E2E8F0] p-5 text-center text-sm text-[#64748B]">
                             Loading history...
@@ -351,19 +352,19 @@ export default function AttendanceHistoryModal({
 
                                     <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                                         <div>
-                                            <p className="text-[#94A3B8]">Late</p>
+                                            <p className="text-[#64748B]">Late</p>
                                             <p className="mt-1 font-medium text-[#334155]">
                                                 {record.is_late === 1 ? "Yes" : "No"}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-[#94A3B8]">Late time</p>
+                                            <p className="text-[#64748B]">Late time</p>
                                             <p className="mt-1 font-medium text-[#334155]">
                                                 {formatTime(record.late_time)}
                                             </p>
                                         </div>
                                         <div className="col-span-2">
-                                            <p className="text-[#94A3B8]">Marked by</p>
+                                            <p className="text-[#64748B]">Marked by</p>
                                             <p className="mt-1 font-medium text-[#334155]">
                                                 {record.marked_by_name || "—"}
                                             </p>
@@ -375,6 +376,6 @@ export default function AttendanceHistoryModal({
                     )}
                 </div>
             </div>
-        </Modal>
+        </AppModal>
     );
 }

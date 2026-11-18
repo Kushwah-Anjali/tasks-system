@@ -33,10 +33,15 @@ interface EmployeeTableProps {
   employees: Employee[];
   isLoading?: boolean;
   updatingPermissionUserId?: number | null;
+
   onAttendancePermissionChange?: (
     employee: Employee,
     canManageAttendance: boolean
   ) => void;
+
+  onViewEmployee: (employee: Employee) => void;
+  onEditEmployee: (employee: Employee) => void;
+  onDeleteEmployee: (employee: Employee) => void;
 }
 
 export default function EmployeeTable({
@@ -44,6 +49,9 @@ export default function EmployeeTable({
   isLoading = false,
   updatingPermissionUserId = null,
   onAttendancePermissionChange,
+  onViewEmployee,
+  onEditEmployee,
+  onDeleteEmployee,
 }: EmployeeTableProps) {
   const [sorting, setSorting] =
     useState<SortingState>([
@@ -70,10 +78,10 @@ export default function EmployeeTable({
               </div>
 
               <div>
-                <p className="text-sm font-medium text-[#0F172A]">
+                <p className="text-base font-semibold text-[#0F172A]">
                   {employee.fullName}
                 </p>
-                <p className="text-xs text-[#94A3B8]">
+                <p className="text-xs text-[#64748B]">
                   {employee.email}
                 </p>
               </div>
@@ -140,7 +148,7 @@ export default function EmployeeTable({
             employee.id;
 
           return (
-            <div className="flex min-w-[180px] items-center gap-2">
+            <div className="flex min-w-[210px] flex-col items-start gap-2">
               <span
                 className={
                   employee.canManageAttendance
@@ -172,33 +180,49 @@ export default function EmployeeTable({
                 }
                 className={
                   employee.canManageAttendance
-                    ? "h-8 rounded-lg border border-red-200 px-2.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                    : "h-8 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] px-2.5 text-xs font-semibold text-[#2563EB] transition-colors hover:bg-[#DBEAFE] disabled:cursor-not-allowed disabled:opacity-50"
+                    ? "h-10 rounded-lg border border-red-200 px-2.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    : "h-10 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] px-2.5 text-xs font-semibold text-[#2563EB] transition-colors hover:bg-[#DBEAFE] disabled:cursor-not-allowed disabled:opacity-50"
                 }
               >
                 {isUpdating
                   ? "Updating..."
                   : employee.canManageAttendance
-                    ? "Revoke"
-                    : "Grant"}
+                    ? "Revoke access"
+                    : "Grant access"}
               </button>
             </div>
           );
         },
         enableSorting: false,
       }),
+columnHelper.display({
+  id: "actions",
+  header: "Actions",
 
-      columnHelper.display({
-        id: "actions",
-        header: "",
-        cell: () => <EmployeeActionsMenu />,
-        enableSorting: false,
-      }),
+  cell: (info) => {
+    const employee =
+      info.row.original;
+
+    return (
+      <EmployeeActionsMenu
+        employee={employee}
+        onView={onViewEmployee}
+        onEdit={onEditEmployee}
+        onDelete={onDeleteEmployee}
+      />
+    );
+  },
+
+  enableSorting: false,
+}),
     ],
-    [
-      onAttendancePermissionChange,
-      updatingPermissionUserId,
-    ]
+  [
+  onAttendancePermissionChange,
+  updatingPermissionUserId,
+  onViewEmployee,
+  onEditEmployee,
+  onDeleteEmployee,
+]
   );
 
   const table = useReactTable({
@@ -220,7 +244,7 @@ export default function EmployeeTable({
   return (
     <div className="rounded-2xl border border-[#E2E8F0] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1180px] text-left">
+        <table className="app-table app-action-table w-full min-w-[1180px] text-left">
           <thead>
             {table
               .getHeaderGroups()
@@ -233,7 +257,7 @@ export default function EmployeeTable({
                     (header) => (
                       <th
                         key={header.id}
-                        className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-[#94A3B8] first:pl-6 last:pr-6"
+                        className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-[#64748B] first:pl-6 last:pr-6"
                       >
                         {header.isPlaceholder
                           ? null
@@ -289,13 +313,13 @@ export default function EmployeeTable({
                   className="px-6 py-16 text-center"
                 >
                   <div className="flex flex-col items-center gap-2">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F1F5F9] text-[#94A3B8]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F1F5F9] text-[#64748B]">
                       <Users className="h-5 w-5" />
                     </div>
-                    <p className="text-sm font-medium text-[#0F172A]">
+                    <p className="text-base font-semibold text-[#0F172A]">
                       No employees found
                     </p>
-                    <p className="text-xs text-[#94A3B8]">
+                    <p className="text-xs text-[#64748B]">
                       Try adjusting your search or filters.
                     </p>
                   </div>

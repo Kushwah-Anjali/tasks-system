@@ -91,16 +91,16 @@ export default function AttendanceManagement() {
                 nextEntries[employee.employeeId] =
                     attendance?.attendance_id
                         ? {
-                              status: attendance.status,
-                              isLate:
-                                  attendance.is_late === 1,
-                              lateTime:
-                                  attendance.late_time?.slice(
-                                      0,
-                                      5
-                                  ) ?? "",
-                              hasExistingRecord: true,
-                          }
+                            status: attendance.status,
+                            isLate:
+                                attendance.is_late === 1,
+                            lateTime:
+                                attendance.late_time?.slice(
+                                    0,
+                                    5
+                                ) ?? "",
+                            hasExistingRecord: true,
+                        }
                         : emptyEntry();
             });
 
@@ -168,10 +168,10 @@ export default function AttendanceManagement() {
             employeeId,
             status === "absent"
                 ? {
-                      status,
-                      isLate: false,
-                      lateTime: "",
-                  }
+                    status,
+                    isLate: false,
+                    lateTime: "",
+                }
                 : { status }
         );
     };
@@ -271,6 +271,11 @@ export default function AttendanceManagement() {
                     </div>
                 ) : null}
 
+                <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+                    <h2 className="text-lg font-semibold text-slate-800">Daily attendance</h2>
+                    <p className="mt-1 text-sm text-slate-600">{canEdit ? "Choose a status, mark late arrivals separately, then save each employee row." : "Attendance status and late arrivals are shown separately for the selected date."}</p>
+                </div>
+
                 <AttendanceTable
                     employees={employees}
                     entries={entries}
@@ -316,6 +321,7 @@ export default function AttendanceManagement() {
 
     return (
         <EmployeeDashboardLayout
+            employeeId={user.id}
             employeeName={user.full_name}
             employeeInitials={employeeInitials}
         >

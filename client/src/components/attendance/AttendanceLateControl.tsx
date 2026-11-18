@@ -17,7 +17,7 @@ export default function AttendanceLateControl({
 }: AttendanceLateControlProps) {
     return (
         <div className="flex min-w-[150px] flex-col gap-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-[#334155]">
+            <label className={"flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold " + (checked && !disabled ? "border-orange-200 bg-orange-50 text-orange-800" : "border-slate-200 bg-slate-50 text-slate-600")}>
                 <input
                     type="checkbox"
                     checked={checked}
@@ -25,7 +25,7 @@ export default function AttendanceLateControl({
                     onChange={(event) =>
                         onToggle(event.target.checked)
                     }
-                    className="h-4 w-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] disabled:cursor-not-allowed"
+                    className="h-5 w-5 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] disabled:cursor-not-allowed"
                 />
                 Late
             </label>

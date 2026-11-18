@@ -19,6 +19,7 @@ export default function EmployeeDashboard() {
 
     return (
         <EmployeeDashboardLayout
+            employeeId={user.id}
             employeeName={user.full_name}
             employeeInitials={getInitials(
                 user.full_name
@@ -28,12 +29,12 @@ export default function EmployeeDashboard() {
                 name={firstName}
             />
 
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-                <h2 className="text-base font-semibold text-[#0F172A]">
+            <div className="rounded-2xl border border-blue-200 border-l-4 border-l-blue-500 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <h2 className="text-xl font-semibold text-[#0F172A]">
                     My Tasks
                 </h2>
                 <p className="mt-1 text-sm text-[#64748B]">
-                    View and update tasks assigned to you.
+                    Review new assignments, respond to forwarding requests, and submit finished work.
                 </p>
                 <Link
                     to="/employee-tasks"

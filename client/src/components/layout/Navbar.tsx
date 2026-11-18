@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { useLogout } from "../../hooks/useLogout";
+import { useNotificationCenter } from "../../hooks/useNotificationCenter";
+import type { AppNotification } from "../../types/notification";
+import NotificationSoundControl from "./NotificationSoundControl";
 import type {
     AuthUser,
 } from "../../types/auth";
@@ -14,14 +18,21 @@ import {
   // UserRound,
 } from "lucide-react";
 
-function NotificationRow({ title, time }: { title: string; time: string }) {
-  return (
-    <button className="flex w-full flex-col items-start gap-0.5 rounded-xl px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#F8FAFC]">
-      <span className="text-sm font-medium text-[#0F172A]">{title}</span>
-      <span className="text-xs text-[#94A3B8]">{time}</span>
-    </button>
-  );
-}
+const getNotificationCopy = (notification: AppNotification) => ({
+  title: notification.type === "task_handoff"
+    ? "Task forwarding request"
+    : notification.type === "task_handoff_rejected"
+      ? "Forward request declined"
+      : notification.title,
+  message: notification.message?.replace(/\bhand[\s-]?off\b/gi, "forward") ?? null,
+});
+
+const getNotificationTime = (value: string): string => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+};
 
 function ProfileMenuItem({
   icon,
@@ -55,7 +66,22 @@ interface NavbarProps {
     user: AuthUser;
 }
 export default function Navbar({ onMenuClick, user }: NavbarProps) {
+  const navigate = useNavigate();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const {
+    notifications,
+    unreadCount,
+    loading: notificationsLoading,
+    error: notificationsError,
+    soundEnabled,
+    soundReady,
+    soundBlocked,
+    refresh: refreshNotifications,
+    markRead,
+    markAllRead,
+    toggleSound,
+    muteSound,
+  } = useNotificationCenter(user.id);
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -63,6 +89,7 @@ const {
     handleLogout,
     isLoggingOut,
 } = useLogout();
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -81,13 +108,24 @@ const {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleMarkNotificationRead = async (notification: AppNotification) => {
+    if (!await markRead(notification)) return;
+
+    setNotificationsOpen(false);
+    const target = notification.reference_id && notification.type.startsWith("task_")
+      ? `/tasks/${notification.reference_id}`
+      : notification.link;
+    if (target) navigate(target);
+  };
+
   const initials = user.full_name
     .split(" ")
     .map((name) => name[0])
     .join("")
     .toUpperCase();
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-[#E2E8F0] bg-white/90 px-4 backdrop-blur-sm sm:px-6">
+    <header className="sticky top-0 z-30 flex h-20 items-center gap-3 border-b border-[#E2E8F0] bg-white/95 px-4 backdrop-blur-sm sm:px-6">
  
       <button
         onClick={onMenuClick}
@@ -118,12 +156,18 @@ const {
         
         <div className="relative" ref={notifRef}>
           <button
+            type="button"
             onClick={() => setNotificationsOpen((prev) => !prev)}
             className="relative flex h-9 w-9 items-center justify-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9]"
             aria-label="Notifications"
+            aria-expanded={notificationsOpen}
           >
             <Bell className="h-[18px] w-[18px]" />
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
+            {unreadCount > 0 ? (
+              <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-[#EF4444] px-1 text-[10px] font-bold leading-none text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            ) : null}
           </button>
 
           <AnimatePresence>
@@ -133,20 +177,54 @@ const {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-2 w-80 rounded-2xl border border-[#E2E8F0] bg-white p-2 shadow-[0_8px_24px_rgba(15,23,42,0.1)]"
+                className="absolute right-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-80 overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.1)] sm:w-80"
               >
-                <div className="px-3 py-2 text-sm font-semibold text-[#0F172A]">
-                  Notifications
+                <div className="flex items-center justify-between gap-3 border-b border-[#E2E8F0] px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0F172A]">Notifications</p>
+                    {unreadCount > 0 ? <p className="mt-0.5 text-xs text-[#64748B]">{unreadCount} unread</p> : null}
+                  </div>
+                  {unreadCount > 0 ? (
+                    <button type="button" onClick={() => void markAllRead()} className="shrink-0 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]">
+                      Mark all read
+                    </button>
+                  ) : null}
                 </div>
-                <NotificationRow
-                  title="Leave request from Daniel Kim"
-                  time="10 minutes ago"
-                />
-            
-                <NotificationRow
-                  title="3 new employees onboarded"
-                  time="Yesterday"
-                />
+                <NotificationSoundControl enabled={soundEnabled} ready={soundReady} blocked={soundBlocked} onToggle={() => void toggleSound()} onMute={() => void muteSound()} />
+                <div className="max-h-[360px] overflow-y-auto p-2">
+                  {notificationsLoading ? (
+                    <p role="status" className="px-4 py-8 text-center text-sm text-[#64748B]">Loading notifications...</p>
+                  ) : notificationsError && notifications.length === 0 ? (
+                    <div className="px-4 py-8 text-center">
+                      <p role="alert" className="text-sm text-red-600">{notificationsError}</p>
+                      <button type="button" onClick={() => void refreshNotifications()} className="mt-2 text-xs font-semibold text-[#2563EB]">Try again</button>
+                    </div>
+                  ) : notifications.length === 0 ? (
+                    <p className="px-4 py-8 text-center text-sm text-[#64748B]">No notifications</p>
+                  ) : (
+                    <>
+                      {notificationsError ? <p role="alert" className="px-3 py-2 text-xs text-red-600">{notificationsError}</p> : null}
+                      {notifications.map((notification) => {
+                        const copy = getNotificationCopy(notification);
+                        return (
+                          <button
+                            key={notification.id}
+                            type="button"
+                            onClick={() => void handleMarkNotificationRead(notification)}
+                            className={`mb-1 flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors last:mb-0 hover:bg-[#F8FAFC] ${notification.is_read === 0 ? "bg-blue-50/60" : "bg-white"}`}
+                          >
+                            <span aria-hidden="true" className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.is_read === 0 ? "bg-[#2563EB]" : "bg-transparent"}`} />
+                            <span className="min-w-0 flex-1">
+                              <span className={`block text-sm text-[#0F172A] ${notification.is_read === 0 ? "font-semibold" : "font-medium"}`}>{copy.title}</span>
+                              {copy.message ? <span className="mt-1 block line-clamp-2 text-xs leading-5 text-[#64748B]">{copy.message}</span> : null}
+                              <time className="mt-1 block text-[11px] text-[#94A3B8]" dateTime={notification.created_at}>{getNotificationTime(notification.created_at)}</time>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
+                </div>
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -160,7 +238,7 @@ const {
             onClick={() => setProfileOpen((prev) => !prev)}
             className="flex items-center gap-2 rounded-xl px-1.5 py-1 hover:bg-[#F1F5F9] sm:pl-1.5 sm:pr-3"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2563EB] text-sm font-semibold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-sm font-semibold text-blue-800">
               {initials}
             </div>
             <span className="hidden text-sm font-medium text-[#0F172A] sm:block">

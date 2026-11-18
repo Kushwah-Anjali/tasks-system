@@ -4,8 +4,13 @@ export type EmployeeStatus =
     | "On Leave";
 
 export interface Employee {
+    /** users.id, used for API actions. */
     id: number;
+    /** employees.id, the profile ID. */
     employeeId: number;
+    phone: string | null;
+    dateOfBirth: string | null;
+    departmentId: number | null;
     fullName: string;
     email: string;
     registrationNumber: string;
@@ -31,4 +36,16 @@ export interface EmployeeApiResponse {
     can_manage_attendance: number | boolean;
     department_id: number | null;
     department: string | null;
+}
+
+export interface UpdateEmployeeInput {
+    fullName: string;
+    email: string;
+    phone: string | null;
+    registrationNumber: string;
+    departmentId: number | null;
+    designation: string | null;
+    joiningDate: string | null;
+    dateOfBirth: string | null;
+    isActive: boolean;
 }

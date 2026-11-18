@@ -34,7 +34,7 @@ export default function EmployeeFilters({
   const hasActiveFilters = Boolean(search || department || status);
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:flex-row sm:flex-wrap sm:items-center">
+    <div className="app-filter-panel flex flex-col gap-3 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:flex-row sm:flex-wrap sm:items-center">
       {/* ============================== */}
       {/* Search */}
       {/* ============================== */}
@@ -44,6 +44,7 @@ export default function EmployeeFilters({
           strokeWidth={2}
         />
         <input
+          aria-label="Search employees"
           type="text"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
@@ -57,6 +58,7 @@ export default function EmployeeFilters({
       {/* ============================== */}
       <div className="relative w-full sm:w-44">
         <select
+          aria-label="Filter by department"
           value={department}
           onChange={(event) => onDepartmentChange(event.target.value)}
           className={selectClass}
@@ -79,6 +81,7 @@ export default function EmployeeFilters({
       {/* ============================== */}
       <div className="relative w-full sm:w-40">
         <select
+          aria-label="Filter by employee status"
           value={status}
           onChange={(event) => onStatusChange(event.target.value as EmployeeStatus | "")}
           className={selectClass}

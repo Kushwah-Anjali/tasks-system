@@ -11,7 +11,7 @@ export default function WelcomeCard({ name }: WelcomeCardProps) {
   const currentTime = now.format("hh:mm A");
 
   return (
-    <div className="mb-7">
+    <div className="mb-7 rounded-2xl border border-blue-100 bg-blue-50/50 px-6 py-6">
       <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
         Welcome back, {name} 👋
       </h1>

@@ -96,7 +96,7 @@ export default function AttendanceTable({
     return (
         <div className="overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
             <div className="hidden overflow-x-auto lg:block">
-                <table className="w-full min-w-[1080px] text-left">
+                <table className="app-table w-full min-w-[1080px] text-left">
                     <thead>
                         <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                             {[
@@ -222,7 +222,7 @@ export default function AttendanceTable({
                                         <p className="truncate text-sm font-semibold text-[#0F172A]">
                                             {employee.fullName}
                                         </p>
-                                        <p className="truncate text-xs text-[#94A3B8]">
+                                        <p className="truncate text-xs text-[#64748B]">
                                             {employee.email}
                                         </p>
                                     </div>
@@ -240,7 +240,7 @@ export default function AttendanceTable({
                                     <div className="flex items-center gap-2 rounded-lg bg-[#F8FAFC] px-3 py-2">
                                         <Building2 className="h-4 w-4 shrink-0 text-[#64748B]" />
                                         <div className="min-w-0">
-                                            <p className="text-[11px] text-[#94A3B8]">
+                                            <p className="text-xs text-[#64748B]">
                                                 Department
                                             </p>
                                             <p className="truncate text-xs font-medium text-[#334155]">
@@ -253,7 +253,7 @@ export default function AttendanceTable({
                                     <div className="flex items-center gap-2 rounded-lg bg-[#F8FAFC] px-3 py-2">
                                         <BriefcaseBusiness className="h-4 w-4 shrink-0 text-[#64748B]" />
                                         <div className="min-w-0">
-                                            <p className="text-[11px] text-[#94A3B8]">
+                                            <p className="text-xs text-[#64748B]">
                                                 Designation
                                             </p>
                                             <p className="truncate text-xs font-medium text-[#334155]">

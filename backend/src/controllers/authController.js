@@ -9,18 +9,6 @@ const sessionCookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
-const register = async (req, res) => {
-    try {
-        const result = await authService.register(req.body);
-
-        return res.status(201).json(result);
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message,
-        });
-    }
-};
-
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -52,8 +40,32 @@ const login = async (req, res) => {
             user: result.user,
         });
     } catch (error) {
-        return res.status(400).json({
-            message: error.message,
+        const clientErrors = new Set([
+            "Invalid email or password",
+            "Your account is pending approval",
+            "Your account is disabled",
+        ]);
+
+        const errorMessage =
+            error && typeof error.message === "string"
+                ? error.message
+                : "Unknown login error";
+
+        if (clientErrors.has(errorMessage)) {
+            return res.status(400).json({
+                message: errorMessage,
+            });
+        }
+
+        console.error("Login failed:", {
+            code: error?.code,
+            errno: error?.errno,
+            sqlState: error?.sqlState,
+            message: errorMessage,
+        });
+
+        return res.status(500).json({
+            message: "Unable to log in right now. Please try again later.",
         });
     }
 };
@@ -83,7 +95,6 @@ const logout = async (req, res) => {
 };
 
 module.exports = {
-    register,
     login,
     logout,
 };

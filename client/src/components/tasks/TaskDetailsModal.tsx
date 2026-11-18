@@ -4,14 +4,12 @@ import {
 } from "react";
 
 import {
-    submitTaskForReview,
-    updateTaskProgress,
+    submitTask,
 } from "../../services/taskService";
 
 import type { Task } from "../../types/task";
 
 import Modal from "./Modal";
-import TaskProgressBar from "./TaskProgressBar";
 import TaskStatusBadge from "./TaskStatusBadge";
 
 interface TaskDetailsModalProps {
@@ -43,14 +41,6 @@ export default function TaskDetailsModal({
     onClose,
     onUpdated,
 }: TaskDetailsModalProps) {
-    const [progressInput, setProgressInput] =
-        useState(0);
-
-    const [
-        isSavingProgress,
-        setIsSavingProgress,
-    ] = useState(false);
-
     const [isSubmitting, setIsSubmitting] =
         useState(false);
 
@@ -60,66 +50,19 @@ export default function TaskDetailsModal({
     useEffect(() => {
         if (!task) return;
 
-        setProgressInput(task.progress);
         setErrorMessage("");
     }, [task]);
 
     if (!task) return null;
-
-    const handleProgressChange = (
-        value: number
-    ) => {
-        const normalizedValue = Math.min(
-            100,
-            Math.max(0, value)
-        );
-
-        setProgressInput(normalizedValue);
-    };
-
-    const handleUpdateProgress = async () => {
-        try {
-            setIsSavingProgress(true);
-            setErrorMessage("");
-
-            await updateTaskProgress(
-                task.id,
-                progressInput
-            );
-
-            const updatedTask: Task = {
-                ...task,
-                progress: progressInput,
-
-                status:
-                    task.status === "assigned" &&
-                    progressInput > 0
-                        ? "in_progress"
-                        : task.status,
-            };
-
-            onUpdated(updatedTask);
-        } catch {
-            setErrorMessage(
-                "Failed to update progress. Please try again."
-            );
-        } finally {
-            setIsSavingProgress(false);
-        }
-    };
 
     const handleSubmitForReview = async () => {
         try {
             setIsSubmitting(true);
             setErrorMessage("");
 
-            await submitTaskForReview(task.id);
+            const updatedTask = await submitTask(task.id);
 
-            onUpdated({
-                ...task,
-                progress: progressInput,
-                status: "submitted",
-            });
+            onUpdated(updatedTask);
 
             onClose();
         } catch {
@@ -132,6 +75,9 @@ export default function TaskDetailsModal({
     };
 
     const cannotUpdate =
+        task.assignment_status !== "accepted" ||
+        task.pending_assignee_id !== null ||
+        task.status === "under_review" ||
         task.status === "submitted" ||
         task.status === "completed";
 
@@ -186,60 +132,8 @@ export default function TaskDetailsModal({
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <p className="text-xs font-medium text-[#64748B]">
-                        Current Progress
-                    </p>
-
-                    <TaskProgressBar
-                        progress={progressInput}
-                    />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                    <label
-                        htmlFor="progressInput"
-                        className="text-sm font-semibold text-[#0F172A]"
-                    >
-                        Update progress (%)
-                    </label>
-
-                    <input
-                        id="progressInput"
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={progressInput}
-                        disabled={cannotUpdate}
-                        onChange={(event) =>
-                            handleProgressChange(
-                                Number(
-                                    event.target.value
-                                )
-                            )
-                        }
-                        className="h-11 w-full rounded-xl border border-[#E2E8F0] px-4 text-sm outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 disabled:cursor-not-allowed disabled:bg-slate-50"
-                    />
-                </div>
-
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                    <button
-                        type="button"
-                        onClick={
-                            handleUpdateProgress
-                        }
-                        disabled={
-                            cannotUpdate ||
-                            isSavingProgress ||
-                            progressInput ===
-                                task.progress
-                        }
-                        className="h-11 rounded-xl border border-[#E2E8F0] px-4 text-sm font-semibold text-[#334155] hover:bg-[#F1F5F9] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {isSavingProgress
-                            ? "Saving..."
-                            : "Update Progress"}
-                    </button>
+
 
                     <button
                         type="button"
