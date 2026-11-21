@@ -6,6 +6,7 @@ import { Link, useParams } from "react-router-dom";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import TaskStatusBadge, { ResponseStatusBadge } from "../components/tasks/TaskStatusBadge";
 import { TaskAgingBadge, TaskPriorityBadge } from "../components/tasks/TaskIndicators";
+import { TaskOverviewField, TaskOverviewGrid } from "../components/tasks/TaskOverviewGrid";
 import { formatTaskDate } from "../components/tasks/taskDateUtils";
 import { getTaskDetails } from "../services/taskService";
 import type { TaskDetailsResponse, TaskTimelineEvent } from "../types/task";
@@ -150,17 +151,42 @@ export default function TaskDetails() {
 
                     <section aria-labelledby="task-overview" className="app-panel">
                         <div className="app-panel-header"><h2 id="task-overview" className="app-section-title"><ClipboardList aria-hidden="true" />Task Overview</h2></div>
-                        <dl className="app-info-grid">
-                            <div><dt><UserRound aria-hidden="true" />Creator</dt><dd>{task.created_by_name || "User #" + task.created_by}</dd></div>
-                            <div><dt><Users aria-hidden="true" />Current Assignee</dt><dd>{task.assigned_to_name || "User #" + task.assigned_to}</dd></div>
-                            <div><dt><CalendarDays aria-hidden="true" />Due Date</dt><dd className="flex flex-wrap items-center gap-2">{task.due_date ? formatTaskDate(task.due_date) : null}<TaskAgingBadge task={task} /></dd></div>
-                            <div><dt><CalendarDays aria-hidden="true" />Assigned Date</dt><dd>{formatDate(task.assigned_date)}</dd></div>
-                            <div><dt><ClipboardList aria-hidden="true" />Task Status</dt><dd><TaskStatusBadge status={task.status} /></dd></div>
-                            <div><dt><ClipboardList aria-hidden="true" />Priority</dt><dd><TaskPriorityBadge priority={task.priority} /></dd></div>
-                            <div><dt><CheckCircle2 aria-hidden="true" />Assignment Status</dt><dd><ResponseStatusBadge status={task.assignment_status} /></dd></div>
-                            {task.pending_assignee_id !== null ? <div><dt><ArrowRightLeft aria-hidden="true" />Forward pending with</dt><dd>{task.pending_assignee_name || "User #" + task.pending_assignee_id}</dd></div> : null}
-                            {task.completed_at ? <div><dt><CheckCircle2 aria-hidden="true" />Completed Date</dt><dd>{formatDate(task.completed_at, true)}</dd></div> : null}
-                        </dl>
+                        <TaskOverviewGrid>
+                            <TaskOverviewField label={<><UserRound aria-hidden="true" />Creator</>}>
+                                {task.created_by_name || "User #" + task.created_by}
+                            </TaskOverviewField>
+                            <TaskOverviewField label={<><Users aria-hidden="true" />Current Assignee</>}>
+                                {task.assigned_to_name || "User #" + task.assigned_to}
+                            </TaskOverviewField>
+                            <TaskOverviewField label={<><CalendarDays aria-hidden="true" />Due Date</>}>
+                                <span className="block">{task.due_date ? formatTaskDate(task.due_date) : null}</span>
+                                <span className="mt-1 flex flex-col items-start">
+                                    <TaskAgingBadge task={task} wrap />
+                                </span>
+                            </TaskOverviewField>
+                            <TaskOverviewField label={<><CalendarDays aria-hidden="true" />Assigned Date</>}>
+                                {formatDate(task.assigned_date)}
+                            </TaskOverviewField>
+                            <TaskOverviewField label={<><ClipboardList aria-hidden="true" />Task Status</>}>
+                                <TaskStatusBadge status={task.status} wrap />
+                            </TaskOverviewField>
+                            <TaskOverviewField label={<><ClipboardList aria-hidden="true" />Priority</>}>
+                                <TaskPriorityBadge priority={task.priority} />
+                            </TaskOverviewField>
+                            <TaskOverviewField label={<><CheckCircle2 aria-hidden="true" />Assignment Status</>}>
+                                <ResponseStatusBadge status={task.assignment_status} wrap />
+                            </TaskOverviewField>
+                            {task.pending_assignee_id !== null ? (
+                                <TaskOverviewField label={<><ArrowRightLeft aria-hidden="true" />Forward pending with</>}>
+                                    {task.pending_assignee_name || "User #" + task.pending_assignee_id}
+                                </TaskOverviewField>
+                            ) : null}
+                            {task.completed_at ? (
+                                <TaskOverviewField label={<><CheckCircle2 aria-hidden="true" />Completed Date</>}>
+                                    {formatDate(task.completed_at, true)}
+                                </TaskOverviewField>
+                            ) : null}
+                        </TaskOverviewGrid>
                     </section>
 
                     {task.rejection_reason && task.assignment_status !== "rejected" ? <section className="rounded-xl border border-red-200 bg-red-50 p-5"><h3 className="font-semibold text-red-800">Rejection reason</h3><p className="mt-2 whitespace-pre-wrap text-red-700">{task.rejection_reason}</p></section> : null}

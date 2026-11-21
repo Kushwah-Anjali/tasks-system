@@ -1,4 +1,6 @@
 import TaskStatusBadge, { ResponseStatusBadge as AssignmentStatusBadge } from "./TaskStatusBadge";
+import { TaskAgingBadge, TaskPriorityBadge } from "./TaskIndicators";
+import { TaskOverviewField, TaskOverviewGrid } from "./TaskOverviewGrid";
 import {
     useEffect,
     useMemo,
@@ -1047,61 +1049,32 @@ export default function TaskWorkspaceModal({
 
                         {/* Task Info */}
 
-                        <div className="grid gap-3 sm:grid-cols-2">
-
-                            <Info
-                                label="Created By"
-                                value={
-                                    task.created_by_name ||
-                                    "—"
-                                }
-                            />
-
-                            <Info
-                                label="Current Assignee"
-                                value={
-                                    task.assigned_to_name ||
-                                    "—"
-                                }
-                            />
-
-                            <Info
-                                label="Assigned Date"
-                                value={
-                                    formatDate(
-                                        task.assigned_date
-                                    )
-                                }
-                            />
-
-                            <Info
-                                label="Due Date"
-                                value={
-                                    formatDate(
-                                        task.due_date
-                                    )
-                                }
-                            />
-
-                            <Info
-                                label="Acceptance"
-                                value={
-                                    getAssignmentLabel(
-                                        task.assignment_status
-                                    )
-                                }
-                            />
-
-                            <Info
-                                label="Task Status"
-                                value={
-                                    getStatusLabel(
-                                        task.status
-                                    )
-                                }
-                            />
-
-                        </div>
+                        <TaskOverviewGrid>
+                            <TaskOverviewField label="Creator">
+                                {task.created_by_name || "\u2014"}
+                            </TaskOverviewField>
+                            <TaskOverviewField label="Current Assignee">
+                                {task.assigned_to_name || "\u2014"}
+                            </TaskOverviewField>
+                            <TaskOverviewField label="Due Date">
+                                <span className="block">{formatDate(task.due_date)}</span>
+                                <span className="mt-1 flex flex-col items-start">
+                                    <TaskAgingBadge task={task} wrap />
+                                </span>
+                            </TaskOverviewField>
+                            <TaskOverviewField label="Assigned Date">
+                                {formatDate(task.assigned_date)}
+                            </TaskOverviewField>
+                            <TaskOverviewField label="Task Status">
+                                {getStatusLabel(task.status)}
+                            </TaskOverviewField>
+                            <TaskOverviewField label="Priority">
+                                <TaskPriorityBadge priority={task.priority} />
+                            </TaskOverviewField>
+                            <TaskOverviewField label="Acceptance">
+                                {getAssignmentLabel(task.assignment_status)}
+                            </TaskOverviewField>
+                        </TaskOverviewGrid>
 
 
                         {/* Pending Handoff */}
@@ -1470,37 +1443,6 @@ export default function TaskWorkspaceModal({
 
             </div>
         </AppModal>
-    );
-}
-
-
-// =====================================
-// Information Card
-// =====================================
-
-function Info({
-    label,
-    value,
-}: {
-    label: string;
-    value: string;
-}) {
-    return (
-        <div className="rounded-xl border border-[#E2E8F0] bg-white p-3">
-
-            <p className="text-xs text-[#64748B]">
-                {
-                    label
-                }
-            </p>
-
-            <p className="mt-1 text-sm font-semibold text-[#334155]">
-                {
-                    value
-                }
-            </p>
-
-        </div>
     );
 }
 

@@ -15,6 +15,8 @@ import Login from "./pages/Login";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import Tasks from "./pages/Tasks";
 import TaskDetails from "./pages/TaskDetails";
+import AdminAccounts from "./pages/AdminAccounts";
+import Settings from "./pages/Settings";
 
 import { getCurrentUser } from "./utils/authStorage";
 
@@ -30,8 +32,9 @@ function HomeRedirect() {
         );
     }
 
-    const destination =
-        user.role === "manager"
+    const destination = user.role === "admin"
+        ? "/admin/accounts"
+        : user.role === "manager"
             ? "/dashboard"
             : "/employee-dashboard";
 
@@ -61,6 +64,24 @@ export default function App() {
             <Route
                 path="/register"
                 element={<HomeRedirect />}
+            />
+
+            <Route
+                path="/admin/accounts"
+                element={
+                    <ProtectedRoute allowedRole="admin">
+                        <AdminAccounts />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/settings"
+                element={
+                    <ProtectedRoute>
+                        <Settings />
+                    </ProtectedRoute>
+                }
             />
 
             {/* Manager routes */}

@@ -1,5 +1,7 @@
 import {
   useEffect,
+  useId,
+  useRef,
   type ReactNode,
 } from "react";
 
@@ -36,6 +38,8 @@ const sizeClasses: Record<
   xl: "max-w-4xl",
 };
 
+const focusableSelector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+
 export default function AppModal({
   open,
   onClose,
@@ -46,14 +50,47 @@ export default function AppModal({
   size = "md",
   closeOnBackdrop = true,
 }: AppModalProps) {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
+
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const focusFirst = () => {
+      const dialog = dialogRef.current;
+      const initialInput = dialog?.querySelector<HTMLElement>(
+        'input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+      );
+      const firstFocusable = dialog?.querySelector<HTMLElement>(focusableSelector);
+      (initialInput || firstFocusable || dialog)?.focus();
+    };
+    const focusTimer = window.requestAnimationFrame(focusFirst);
 
     const handleKeyDown = (
       event: KeyboardEvent
     ) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key === "Tab" && dialogRef.current) {
+        const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(focusableSelector));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
 
@@ -76,8 +113,10 @@ export default function AppModal({
         "keydown",
         handleKeyDown
       );
+      window.cancelAnimationFrame(focusTimer);
+      previousFocus?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -101,6 +140,10 @@ export default function AppModal({
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className={`
           app-modal flex max-h-[90vh]
           w-full flex-col
@@ -124,6 +167,7 @@ export default function AppModal({
         >
           <div>
             <h2
+              id={titleId}
               className="
                 text-lg font-bold
                 tracking-tight

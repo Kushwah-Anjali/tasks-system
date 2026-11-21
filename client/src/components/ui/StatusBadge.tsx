@@ -12,13 +12,14 @@ const tones: Record<StatusTone, string> = {
     orange: "border-orange-200 bg-orange-50 text-orange-800",
 };
 
-export default function StatusBadge({ children, tone = "neutral", prominent = false }: {
+export default function StatusBadge({ children, tone = "neutral", prominent = false, wrap = false }: {
     children: ReactNode;
     tone?: StatusTone;
     prominent?: boolean;
+    wrap?: boolean;
 }) {
     return (
-        <span className={"inline-flex w-fit shrink-0 items-center gap-2 whitespace-nowrap rounded-full border font-semibold " + tones[tone] + (prominent ? " px-4 py-2 text-sm" : " px-3 py-1.5 text-xs")}>
+        <span className={"inline-flex w-fit items-center gap-2 rounded-full border font-semibold " + (wrap ? "max-w-full min-w-0 whitespace-normal break-words" : "shrink-0 whitespace-nowrap") + " " + tones[tone] + (prominent ? " px-4 py-2 text-sm" : " px-3 py-1.5 text-xs")}>
             <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-70" />
             {children}
         </span>

@@ -18,7 +18,7 @@ import AppModal from "../components/ui/AppModal";
 import {
     getEmployees,
     updateEmployee,
-    deleteEmployee,
+    deactivateEmployee,
     updateAttendancePermission,
 } from "../services/employeeService";
 
@@ -33,7 +33,7 @@ import { getCurrentUser } from "../utils/authStorage";
 type EmployeeModalMode =
     | "view"
     | "edit"
-    | "delete"
+    | "deactivate"
     | null;
 
 export default function Employees() {
@@ -255,7 +255,7 @@ export default function Employees() {
     };
     const handleViewEmployee = (employee: Employee) => openEmployeeModal(employee, "view");
     const handleEditEmployee = (employee: Employee) => openEmployeeModal(employee, "edit");
-    const handleDeleteEmployee = (employee: Employee) => openEmployeeModal(employee, "delete");
+    const handleDeactivateEmployee = (employee: Employee) => openEmployeeModal(employee, "deactivate");
     const handleCloseModal = () => {
         if (submitting.current) return;
         setModalMode(null);
@@ -276,10 +276,12 @@ export default function Employees() {
                 setEmployees(current => current.map(employee => employee.id === userId
                     ? { ...updated, canManageAttendance: employee.canManageAttendance } : employee));
                 setSuccessMessage("Employee updated successfully.");
-            } else if (modalMode === "delete") {
-                await deleteEmployee(userId);
-                setEmployees(current => current.filter(employee => employee.id !== userId));
-                setSuccessMessage("Employee deleted successfully.");
+            } else if (modalMode === "deactivate") {
+                const updated = await deactivateEmployee(userId);
+                setEmployees(current => current.map(employee => employee.id === userId
+                    ? { ...updated, canManageAttendance: employee.canManageAttendance }
+                    : employee));
+                setSuccessMessage("Employee deactivated successfully.");
             }
             setModalMode(null);
             setSelectedEmployee(null);
@@ -357,8 +359,8 @@ export default function Employees() {
                     onEditEmployee={
                         handleEditEmployee
                     }
-                    onDeleteEmployee={
-                        handleDeleteEmployee
+                    onDeactivateEmployee={
+                        handleDeactivateEmployee
                     }
                 />
             </div>
@@ -374,7 +376,7 @@ export default function Employees() {
                         ? "Employee Details"
                         : modalMode === "edit"
                             ? "Edit Employee"
-                            : "Delete Employee"
+                            : "Deactivate Employee"
                 }
                 description={
                     selectedEmployee
@@ -449,14 +451,14 @@ export default function Employees() {
                         </div>
                     </form>
                 )}
-                {modalMode === "delete" && selectedEmployee && (
+                {modalMode === "deactivate" && selectedEmployee && (
                     <div className="space-y-4">
-                        <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                            Delete {selectedEmployee.fullName}? This permanently deletes their account and employee profile. This action cannot be undone.
+                        <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                            Deactivate this employee? They will lose access, but their records and task history will be kept.
                         </p>
                         <div className="flex justify-end gap-2">
                             <button type="button" disabled={isSubmitting} onClick={handleCloseModal} className="h-10 rounded-lg border border-[#CBD5E1] px-4 text-sm font-semibold">Cancel</button>
-                            <button type="button" disabled={isSubmitting} onClick={() => void handleSubmit()} className="h-10 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white disabled:opacity-50">{isSubmitting ? "Deleting..." : "Delete Employee"}</button>
+                            <button type="button" disabled={isSubmitting} onClick={() => void handleSubmit()} className="h-10 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">{isSubmitting ? "Deactivating..." : "Deactivate Employee"}</button>
                         </div>
                     </div>
                 )}

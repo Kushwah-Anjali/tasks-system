@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import AuthLayout from "../components/layout/AuthLayout";
 
@@ -41,6 +41,8 @@ const getApiErrorMessage = (
 
 export default function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const successMessage = (location.state as { successMessage?: string } | null)?.successMessage;
 
     const [isSubmitting, setIsSubmitting] =
         useState(false);
@@ -61,6 +63,11 @@ export default function Login() {
             );
 
             saveCurrentUser(data.user);
+
+            if (data.user.role === "admin") {
+                navigate("/admin/accounts", { replace: true });
+                return;
+            }
 
             if (data.user.role === "manager") {
                 navigate("/dashboard", {
@@ -110,6 +117,12 @@ export default function Login() {
                         dashboard.
                     </p>
                 </div>
+
+                {successMessage ? (
+                    <p role="status" className="mb-5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+                        {successMessage}
+                    </p>
+                ) : null}
 
                 <LoginForm
                     onSubmit={handleSubmit}

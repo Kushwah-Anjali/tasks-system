@@ -28,8 +28,9 @@ export default function ProtectedRoute({
         );
     }
 
-    const destination =
-        user.role === "manager"
+    const destination = user.role === "admin"
+        ? "/admin/accounts"
+        : user.role === "manager"
             ? "/dashboard"
             : "/employee-dashboard";
 

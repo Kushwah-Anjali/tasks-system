@@ -58,6 +58,7 @@
 /* Keep names, dates and actions readable inside horizontally scrollable tables. */
 .app-table td { white-space: nowrap; }
 .app-table td:first-child { min-width: 240px; }
+.app-table td.app-task-title-cell { position: relative; padding: 0; }
 .app-table td:first-child button { white-space: normal; }
 .app-table td:first-child p { overflow-wrap: normal; }
 @media (min-width: 1024px) {

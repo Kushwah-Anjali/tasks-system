@@ -248,7 +248,8 @@ export default function RegisterForm({
         <div className="flex flex-col gap-1.5">
           <PasswordInput
             id="password"
-            label="Password"
+            label="Temporary password"
+            autoComplete="new-password"
             value={watch("password")}
             onChange={(value) =>
               setValue("password", value, {
@@ -256,6 +257,10 @@ export default function RegisterForm({
               })
             }
           />
+
+          <p className="text-xs leading-5 text-[#64748B]">
+            Share this password privately. The employee can change it in Settings.
+          </p>
 
           <FieldError
             message={errors.password?.message}

@@ -5,20 +5,15 @@ interface WelcomeCardProps {
 }
 
 export default function WelcomeCard({ name }: WelcomeCardProps) {
-  const now = dayjs();
-
-  const currentDate = now.format("dddd, DD MMMM YYYY");
-  const currentTime = now.format("hh:mm A");
+  const firstName = name.trim().split(/\s+/)[0] || "there";
+  const currentDate = dayjs().format("dddd, DD MMMM YYYY");
 
   return (
-    <div className="mb-7 rounded-2xl border border-blue-100 bg-blue-50/50 px-6 py-6">
-      <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
-        Welcome back, {name} 👋
+    <div className="min-w-0">
+      <h1 className="break-words text-xl font-bold tracking-tight text-[#0F172A] sm:text-2xl">
+        Hi, {firstName} {"\u{1F44B}"}
       </h1>
-
-      <p className="mt-1 text-sm text-[#64748B]">
-        {currentDate} • {currentTime}
-      </p>
+      <p className="mt-0.5 text-xs text-[#64748B] sm:text-sm">{currentDate}</p>
     </div>
   );
 }

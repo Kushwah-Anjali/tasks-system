@@ -1,6 +1,7 @@
 export type UserRole =
     | "manager"
-    | "employee";
+    | "employee"
+    | "admin";
 
 export interface AuthUser {
     id: number;

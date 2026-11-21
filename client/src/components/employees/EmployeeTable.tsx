@@ -41,7 +41,7 @@ interface EmployeeTableProps {
 
   onViewEmployee: (employee: Employee) => void;
   onEditEmployee: (employee: Employee) => void;
-  onDeleteEmployee: (employee: Employee) => void;
+  onDeactivateEmployee: (employee: Employee) => void;
 }
 
 export default function EmployeeTable({
@@ -51,7 +51,7 @@ export default function EmployeeTable({
   onAttendancePermissionChange,
   onViewEmployee,
   onEditEmployee,
-  onDeleteEmployee,
+  onDeactivateEmployee,
 }: EmployeeTableProps) {
   const [sorting, setSorting] =
     useState<SortingState>([
@@ -208,7 +208,7 @@ columnHelper.display({
         employee={employee}
         onView={onViewEmployee}
         onEdit={onEditEmployee}
-        onDelete={onDeleteEmployee}
+        onDeactivate={onDeactivateEmployee}
       />
     );
   },
@@ -221,7 +221,7 @@ columnHelper.display({
   updatingPermissionUserId,
   onViewEmployee,
   onEditEmployee,
-  onDeleteEmployee,
+  onDeactivateEmployee,
 ]
   );
 

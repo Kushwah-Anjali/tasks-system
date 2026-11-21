@@ -12,12 +12,10 @@ const taskRoutes = require("./routes/taskRoutes");
 const notificationRoutes =
   require("./routes/notificationRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const clientOrigins = require("./config/clientOrigins");
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://tasks.solezz.in",
-    "https://tasks-system.vercel.app",
-  ],
+  origin: clientOrigins,
   credentials: true,
 }));
 app.use(express.json());
@@ -29,6 +27,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/employees", employeeRoutes);

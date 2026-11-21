@@ -108,7 +108,11 @@ const updateAttendancePermission = async (
   const [result] = await db.promise().query(
     `UPDATE users
      SET can_manage_attendance = ?
-     WHERE id = ?`,
+     WHERE id = ?
+       AND role = 'employee'
+       AND EXISTS (
+         SELECT 1 FROM employees WHERE employees.user_id = users.id
+       )`,
     [canManageAttendance ? 1 : 0, userId]
   );
 
@@ -122,9 +126,11 @@ const updateEmployee = async (userId, employeeData) => {
     await connection.beginTransaction();
 
     const [employeeRows] = await connection.query(
-      `SELECT id
-       FROM employees
-       WHERE user_id = ?
+      `SELECT users.id
+       FROM users
+       INNER JOIN employees ON employees.user_id = users.id
+       WHERE users.id = ?
+         AND users.role = 'employee'
        LIMIT 1 FOR UPDATE`,
       [userId]
     );
@@ -141,7 +147,7 @@ const updateEmployee = async (userId, employeeData) => {
          email = ?,
          phone = ?,
          is_active = ?
-       WHERE id = ?`,
+       WHERE id = ? AND role = 'employee'`,
       [
         employeeData.fullName,
         employeeData.email,
@@ -170,6 +176,13 @@ const updateEmployee = async (userId, employeeData) => {
       ]
     );
 
+    if (!employeeData.isActive) {
+      await connection.query(
+        "DELETE FROM sessions WHERE user_id = ?",
+        [userId]
+      );
+    }
+
     const [updatedRows] = await connection.query(
       `${employeeSelect} WHERE u.id = ? LIMIT 1`, [userId]
     );
@@ -183,40 +196,46 @@ const updateEmployee = async (userId, employeeData) => {
   }
 };
 
-const deleteEmployee = async (userId) => {
+const deactivateEmployee = async (userId) => {
   const connection = await db.promise().getConnection();
 
   try {
     await connection.beginTransaction();
 
     const [employeeRows] = await connection.query(
-      `SELECT id
-       FROM employees
-       WHERE user_id = ?
+      `SELECT users.id
+       FROM users
+       INNER JOIN employees ON employees.user_id = users.id
+       WHERE users.id = ?
+         AND users.role = 'employee'
        LIMIT 1 FOR UPDATE`,
       [userId]
     );
 
     if (employeeRows.length === 0) {
       await connection.rollback();
-      return false;
+      return null;
     }
 
     await connection.query(
-      `DELETE FROM employees
-       WHERE user_id = ?`,
+      `UPDATE users
+       SET is_active = 0
+       WHERE id = ? AND role = 'employee'`,
       [userId]
     );
 
-    const [userResult] = await connection.query(
-      `DELETE FROM users
-       WHERE id = ?`,
+    await connection.query(
+      "DELETE FROM sessions WHERE user_id = ?",
+      [userId]
+    );
+
+    const [updatedRows] = await connection.query(
+      `${employeeSelect} WHERE u.id = ? LIMIT 1`,
       [userId]
     );
 
     await connection.commit();
-
-    return userResult.affectedRows > 0;
+    return updatedRows[0] || null;
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -230,5 +249,5 @@ module.exports = {
   createEmployee,
   updateAttendancePermission,
   updateEmployee,
-  deleteEmployee,
+  deactivateEmployee,
 };

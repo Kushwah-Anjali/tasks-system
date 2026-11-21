@@ -25,10 +25,10 @@ const agingStyles = {
     neutral: "border-slate-200 bg-slate-50 text-slate-600",
 };
 
-export function TaskAgingBadge({ task }: { task: Pick<Task, "due_date" | "status"> }) {
+export function TaskAgingBadge({ task, wrap = false }: { task: Pick<Task, "due_date" | "status">; wrap?: boolean }) {
     const aging = getTaskAging(task);
     return (
-        <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold ${agingStyles[aging.tone]}`}>
+        <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${wrap ? "max-w-full whitespace-normal break-words" : "whitespace-nowrap"} ${agingStyles[aging.tone]}`}>
             {aging.label}
         </span>
     );

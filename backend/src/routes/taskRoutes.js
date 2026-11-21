@@ -9,6 +9,8 @@ const authMiddleware =
 
 const managerMiddleware =
     require("../middleware/managerMiddleware");
+const taskUserMiddleware =
+    require("../middleware/taskUserMiddleware");
 
 const router =
     express.Router();
@@ -22,6 +24,7 @@ const router =
 router.post(
     "/",
     authMiddleware,
+    taskUserMiddleware,
     taskController.createTask
 );
 
@@ -34,6 +37,7 @@ router.post(
 router.get(
     "/assignees",
     authMiddleware,
+    taskUserMiddleware,
     taskController.getTaskAssignees
 );
 
@@ -46,12 +50,14 @@ router.get(
 router.get(
     "/my",
     authMiddleware,
+    taskUserMiddleware,
     taskController.getMyTasks
 );
 
 router.get(
     "/created-by-me",
     authMiddleware,
+    taskUserMiddleware,
     taskController.getCreatedByMe
 );
 
@@ -87,12 +93,14 @@ router.get(
 router.patch(
     "/:id/accept",
     authMiddleware,
+    taskUserMiddleware,
     taskController.acceptTask
 );
 
 router.patch(
     "/:id/reject",
     authMiddleware,
+    taskUserMiddleware,
     taskController.rejectTask
 );
 
@@ -105,6 +113,7 @@ router.patch(
 router.post(
     "/:id/handoff",
     authMiddleware,
+    taskUserMiddleware,
     taskController.handoffTask
 );
 
@@ -117,6 +126,7 @@ router.post(
 router.patch(
     "/:id/progress",
     authMiddleware,
+    taskUserMiddleware,
     taskController.updateTaskProgress
 );
 
@@ -128,6 +138,7 @@ router.patch(
 router.patch(
     "/:id/submit",
     authMiddleware,
+    taskUserMiddleware,
     taskController.submitTask
 );
 
@@ -140,6 +151,7 @@ router.patch(
 router.patch(
     "/:id/edit",
     authMiddleware,
+    taskUserMiddleware,
     taskController.updateTask
 );
 
@@ -152,6 +164,7 @@ router.patch(
 router.patch(
     "/:id/review",
     authMiddleware,
+    taskUserMiddleware,
     taskController.reviewTask
 );
 

@@ -34,11 +34,11 @@ router.patch(
   employeeController.updateEmployee
 );
 
-router.delete(
-  "/:userId",
+router.patch(
+  "/:userId/deactivate",
   authMiddleware,
   managerMiddleware,
-  employeeController.deleteEmployee
+  employeeController.deactivateEmployee
 );
 
 module.exports = router;

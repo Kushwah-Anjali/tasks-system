@@ -94,6 +94,7 @@ export const updateEmployee = async (userId: number, data: UpdateEmployeeInput):
     const response = await api.patch<{ employee: EmployeeApiResponse }>(`/employees/${userId}`, data);
     return mapEmployee(response.data.employee);
 };
-export const deleteEmployee = async (userId: number): Promise<void> => {
-    await api.delete(`/employees/${userId}`);
+export const deactivateEmployee = async (userId: number): Promise<Employee> => {
+    const response = await api.patch<{ employee: EmployeeApiResponse }>(`/employees/${userId}/deactivate`);
+    return mapEmployee(response.data.employee);
 };

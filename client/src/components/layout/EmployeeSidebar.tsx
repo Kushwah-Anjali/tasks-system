@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   CalendarCheck2,
   ClipboardList,
+  Settings,
   // UserRound,
   X,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const navItems: EmployeeNavItem[] = [
     requiresAttendanceManagement: true,
   },
   { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/employee-tasks" },
+  { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" />, path: "/settings" },
 ];
 
 interface EmployeeSidebarProps {

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import Swal from "sweetalert2";
 import { Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import type { SortingState } from "@tanstack/react-table";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
@@ -33,7 +32,6 @@ const DEFAULT_SORT: SortingState = [{ id: "due_date", desc: false }];
 
 export default function Tasks() {
     const user = getCurrentUser();
-    const navigate = useNavigate();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [assignedTaskCount, setAssignedTaskCount] = useState(0);
@@ -367,7 +365,6 @@ export default function Tasks() {
                         onPageIndexChange={setPageIndex}
                         onPageSizeChange={(value) => { setPageSize(value as 10 | 25 | 50); setPageIndex(0); }}
                         onSortingChange={(value) => { setSorting(value.length ? value : DEFAULT_SORT); setPageIndex(0); }}
-                        onTaskClick={(task) => navigate(`/tasks/${task.id}`)}
                         onTaskEdit={(task) => { setEditingTask(task); setIsModalOpen(true); }}
                         onTaskDelete={handleTaskDelete}
                         personalScope={scope === "all" ? undefined : scope}

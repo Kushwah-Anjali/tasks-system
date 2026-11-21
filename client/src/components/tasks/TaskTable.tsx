@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 import {
     ArrowRightLeft,
     ArrowDown,
@@ -35,7 +36,6 @@ interface TaskTableProps {
     onPageIndexChange: (pageIndex: number) => void;
     onPageSizeChange: (pageSize: number) => void;
     onSortingChange: (sorting: SortingState) => void;
-    onTaskClick?: (task: Task) => void;
     onTaskEdit?: (task: Task) => void;
     onTaskDelete?: (taskId: number) => Promise<void> | void;
     personalScope?: "assigned" | "created";
@@ -80,7 +80,6 @@ export default function TaskTable({
     onPageIndexChange,
     onPageSizeChange,
     onSortingChange,
-    onTaskClick,
     onTaskEdit,
     onTaskDelete,
     personalScope,
@@ -135,14 +134,18 @@ export default function TaskTable({
             accessorKey: "title",
             header: ({ column }) => <SortHeader column={column}>Task</SortHeader>,
             cell: ({ row }) => (
-                <button
-                    type="button"
-                    disabled={!onTaskClick}
-                    onClick={() => onTaskClick?.(row.original)}
-                    className="text-left text-sm font-semibold text-[#0F172A] hover:text-[#2563EB] focus-visible:outline-2 focus-visible:outline-[#2563EB]"
-                >
-                    {row.original.title}
-                </button>
+                <>
+                    <span aria-hidden="true" className="invisible block min-h-[3.25rem] w-full break-words px-6 py-3.5 text-sm font-semibold leading-5">
+                        {row.original.title}
+                    </span>
+                    <Link
+                        to={`/tasks/${row.original.id}`}
+                        aria-label={`Open task details for ${row.original.title || "task"}`}
+                        className="absolute inset-0 flex cursor-pointer items-start px-6 py-3.5 text-left text-sm font-semibold leading-5 text-[#0F172A] transition-colors hover:bg-[#F8FAFC] hover:text-[#2563EB] focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#2563EB]"
+                    >
+                        <span className="min-w-0 break-words [overflow-wrap:anywhere]">{row.original.title}</span>
+                    </Link>
+                </>
             ),
         },
         {
@@ -159,6 +162,15 @@ export default function TaskTable({
                 </span>
             ),
         },
+        ...(personalScope === "assigned" ? [] : [{
+            id: "assigned_by_name",
+            accessorFn: (task: Task) => task.created_by_name || "Name unavailable",
+            header: () => <span className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">Assigned By</span>,
+            enableSorting: false,
+            cell: ({ row }: { row: { original: Task } }) => (
+                <span className="text-sm font-semibold text-[#334155]">{row.original.created_by_name || "Name unavailable"}</span>
+            ),
+        }]),
         {
             id: "assigned_date",
             accessorKey: "assigned_date",
@@ -265,7 +277,7 @@ export default function TaskTable({
                 );
             },
         },
-    ], [acceptingTaskId, currentUserId, deletingTaskId, handleDelete, onPersonalAction, onTaskAccept, onTaskClick, onTaskDelete, onTaskEdit, personalScope]);
+    ], [acceptingTaskId, currentUserId, deletingTaskId, handleDelete, onPersonalAction, onTaskAccept, onTaskDelete, onTaskEdit, personalScope]);
 
     const table = useReactTable({
         data: tasks,
@@ -273,7 +285,10 @@ export default function TaskTable({
         state: {
             sorting,
             pagination: { pageIndex, pageSize },
-            columnVisibility: { pending_assignee_name: Boolean(personalScope) },
+            columnVisibility: {
+                pending_assignee_name: Boolean(personalScope),
+                assigned_by_name: personalScope !== "assigned",
+            },
         },
         manualPagination: true,
         manualSorting: true,
@@ -312,7 +327,7 @@ export default function TaskTable({
                     <tbody>
                         {table.getRowModel().rows.length === 0 ? (
                             <tr>
-                                <td colSpan={columns.length} className="px-6 py-16 text-center">
+                                <td colSpan={table.getVisibleLeafColumns().length} className="px-6 py-16 text-center">
                                     <p className="text-base font-semibold text-[#0F172A]">No tasks match the selected filters.</p>
                                     <p className="mt-1 text-xs text-[#64748B]">Change the priority, employee, search, or task view to see more results.</p>
                                 </td>
@@ -320,7 +335,7 @@ export default function TaskTable({
                         ) : table.getRowModel().rows.map((row) => (
                             <tr key={row.id} className="border-b border-[#E2E8F0] last:border-none hover:bg-[#F8FAFC]">
                                 {row.getVisibleCells().map((cell) => (
-                                    <td key={cell.id} className="px-4 py-3.5 first:pl-6 last:pr-6">
+                                    <td key={cell.id} className={cell.column.id === "title" ? "app-task-title-cell" : "px-4 py-3.5 first:pl-6 last:pr-6"}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </td>
                                 ))}

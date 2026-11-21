@@ -91,7 +91,55 @@ const logout = async (sessionToken) => {
     );
 };
 
+const changePassword = async ({ userId, currentPassword, newPassword }) => {
+    const connection = await db.promise().getConnection();
+
+    try {
+        await connection.beginTransaction();
+        const [users] = await connection.query(
+            "SELECT password FROM users WHERE id = ? LIMIT 1 FOR UPDATE",
+            [userId]
+        );
+
+        if (users.length === 0) {
+            const error = new Error("Account not found.");
+            error.code = "ACCOUNT_NOT_FOUND";
+            throw error;
+        }
+
+        const passwordHash = users[0].password;
+        if (!(await bcrypt.compare(currentPassword, passwordHash))) {
+            const error = new Error("Current password is incorrect.");
+            error.code = "CURRENT_PASSWORD_INCORRECT";
+            throw error;
+        }
+
+        if (await bcrypt.compare(newPassword, passwordHash)) {
+            const error = new Error("Choose a new password different from your current password.");
+            error.code = "SAME_PASSWORD";
+            throw error;
+        }
+
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        await connection.query(
+            "UPDATE users SET password = ? WHERE id = ?",
+            [newPasswordHash, userId]
+        );
+        await connection.query(
+            "DELETE FROM sessions WHERE user_id = ?",
+            [userId]
+        );
+        await connection.commit();
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
 module.exports = {
     login,
     logout,
+    changePassword,
 };

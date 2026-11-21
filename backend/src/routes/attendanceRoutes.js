@@ -8,6 +8,10 @@ const attendanceManagerMiddleware = require(
 const attendanceViewerMiddleware = require(
   "../middleware/attendanceViewerMiddleware"
 );
+const attendanceUserMiddleware = require("../middleware/roleMiddleware")(
+  "manager",
+  "employee"
+);
 
 const router = express.Router();
 
@@ -16,6 +20,7 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
+  attendanceUserMiddleware,
   attendanceManagerMiddleware,
   attendanceController.markAttendance
 );
@@ -25,12 +30,14 @@ router.post(
 router.get(
   "/daily",
   authMiddleware,
+  attendanceUserMiddleware,
   attendanceViewerMiddleware,
   attendanceController.getDailyAttendance
 );
 router.get(
   "/employee/:employeeId/summary",
   authMiddleware,
+  attendanceUserMiddleware,
   attendanceViewerMiddleware,
   attendanceController.getEmployeeAttendanceSummary
 );
@@ -39,6 +46,7 @@ router.get(
 router.get(
   "/employee/:employeeId",
   authMiddleware,
+  attendanceUserMiddleware,
   attendanceViewerMiddleware,
   attendanceController.getEmployeeAttendance
 );

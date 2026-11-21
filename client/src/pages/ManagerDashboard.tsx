@@ -70,40 +70,32 @@ export default function ManagerDashboard() {
     if (!user) return null;
 
     const value = (count: number) =>
-        isLoading ? "—" : String(count);
+        isLoading ? "\u2014" : String(count);
 
     const statCards: StatCard[] = [
         {
             label: "Total Employees",
             tone: "blue",
             value: value(stats.totalEmployees),
-            delta: "All employees",
-            trend: "up",
-            icon: <Users className="h-5 w-5" />,
+            icon: <Users className="h-4 w-4" />,
         },
         {
             label: "Present Today",
             tone: "green",
             value: value(stats.presentToday),
-            delta: "Marked present today",
-            trend: "up",
-            icon: <CalendarCheck2 className="h-5 w-5" />,
+            icon: <CalendarCheck2 className="h-4 w-4" />,
         },
         {
             label: "Absent Today",
             tone: "red",
             value: value(stats.absentToday),
-            delta: "Marked absent today",
-            trend: "down",
-            icon: <UserX className="h-5 w-5" />,
+            icon: <UserX className="h-4 w-4" />,
         },
         {
             label: "Open Tasks",
             tone: "amber",
             value: value(stats.openTasks),
-            delta: "Not completed",
-            trend: "up",
-            icon: <ClipboardList className="h-5 w-5" />,
+            icon: <ClipboardList className="h-4 w-4" />,
         },
     ];
 
@@ -112,18 +104,18 @@ export default function ManagerDashboard() {
             <WelcomeCard name={user.full_name} />
 
             {errorMessage ? (
-                <div className="mt-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                     {errorMessage}
                 </div>
             ) : null}
 
-            <div className="mt-6">
+            <div className="mt-4">
                 <StatisticsSection
                     stats={statCards}
                 />
             </div>
 
-            <div className="mt-6">
+            <div className="mt-4">
                 <RecentAttendance
                     rows={recentAttendance}
                     isLoading={isLoading}

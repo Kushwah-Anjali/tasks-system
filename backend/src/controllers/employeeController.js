@@ -22,6 +22,16 @@ const isAtLeastEighteen = (value) => {
 };
 
 const createEmployee = async (req, res) => {
+  const body = req.body || {};
+  if (
+    Object.prototype.hasOwnProperty.call(body, "role") &&
+    body.role !== "employee"
+  ) {
+    return res.status(403).json({
+      message: "Managers can only create employee accounts.",
+    });
+  }
+
   const {
     full_name: fullName,
     email,
@@ -32,7 +42,7 @@ const createEmployee = async (req, res) => {
     department_id: departmentId,
     designation,
     joining_date: joiningDate,
-  } = req.body || {};
+  } = body;
 
   if (
     typeof fullName !== "string" || !fullName.trim() ||
@@ -158,6 +168,16 @@ const updateEmployee = async (req, res) => {
       });
     }
 
+    const body = req.body || {};
+    if (
+      Object.prototype.hasOwnProperty.call(body, "role") &&
+      body.role !== "employee"
+    ) {
+      return res.status(403).json({
+        message: "Employee roles cannot be changed through this endpoint.",
+      });
+    }
+
     const {
       fullName,
       email,
@@ -168,7 +188,7 @@ const updateEmployee = async (req, res) => {
       designation = null,
       joiningDate = null,
       isActive,
-    } = req.body;
+    } = body;
 
     if (
       typeof fullName !== "string" || !fullName.trim() ||
@@ -263,7 +283,7 @@ const updateEmployee = async (req, res) => {
   }
 };
 
-const deleteEmployee = async (req, res) => {
+const deactivateEmployee = async (req, res) => {
   try {
     const userId = Number(req.params.userId);
 
@@ -273,34 +293,22 @@ const deleteEmployee = async (req, res) => {
       });
     }
 
-    const deleted =
-      await employeeService.deleteEmployee(userId);
+    const employee =
+      await employeeService.deactivateEmployee(userId);
 
-    if (!deleted) {
+    if (!employee) {
       return res.status(404).json({
-        message: "Employee not found.",
+        message: "Employee account not found.",
       });
     }
 
-    res.status(200).json({
-      message: "Employee deleted successfully.",
+    return res.status(200).json({
+      message: "Employee deactivated successfully.",
+      employee,
     });
   } catch (error) {
-    console.error("Delete employee error:", error);
-
-    if (
-      error.code === "ER_ROW_IS_REFERENCED_2" ||
-      error.errno === 1451
-    ) {
-      return res.status(409).json({
-        message:
-          "This employee has linked records and cannot be deleted safely.",
-      });
-    }
-
-    res.status(500).json({
-      message: "Unable to delete employee.",
-    });
+    console.error("Deactivate employee error:", error.code || "UNKNOWN");
+    return res.status(500).json({ message: "Unable to deactivate employee." });
   }
 };
 
@@ -309,5 +317,5 @@ module.exports = {
   getAllEmployees,
   updateAttendancePermission,
   updateEmployee,
-  deleteEmployee,
+  deactivateEmployee,
 };

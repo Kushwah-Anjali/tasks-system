@@ -10,9 +10,9 @@ const statuses: Record<TaskStatus, { label: string; tone: StatusTone }> = {
     completed: { label: "Completed", tone: "success" },
 };
 
-export default function TaskStatusBadge({ status, prominent = false }: { status: TaskStatus; prominent?: boolean }) {
+export default function TaskStatusBadge({ status, prominent = false, wrap = false }: { status: TaskStatus; prominent?: boolean; wrap?: boolean }) {
     const config = statuses[status];
-    return <StatusBadge tone={config.tone} prominent={prominent}>{config.label}</StatusBadge>;
+    return <StatusBadge tone={config.tone} prominent={prominent} wrap={wrap}>{config.label}</StatusBadge>;
 }
 
 const responses: Record<HandoffStatus, { label: string; tone: StatusTone }> = {
@@ -21,7 +21,7 @@ const responses: Record<HandoffStatus, { label: string; tone: StatusTone }> = {
     rejected: { label: "Rejected", tone: "danger" },
 };
 
-export function ResponseStatusBadge({ status, prominent = false }: { status: HandoffStatus; prominent?: boolean }) {
+export function ResponseStatusBadge({ status, prominent = false, wrap = false }: { status: HandoffStatus; prominent?: boolean; wrap?: boolean }) {
     const config = responses[status];
-    return <StatusBadge tone={config.tone} prominent={prominent}>{config.label}</StatusBadge>;
+    return <StatusBadge tone={config.tone} prominent={prominent} wrap={wrap}>{config.label}</StatusBadge>;
 }
