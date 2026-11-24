@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, LogOut, Menu } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Settings } from "lucide-react";
 import type { ReactNode } from "react";
 import { useLogout } from "../../hooks/useLogout";
 import { useNotificationCenter } from "../../hooks/useNotificationCenter";
 import NotificationPanel from "./NotificationPanel";
+import UserAvatar from "../profile/UserAvatar";
+import { useUserAvatarProfile } from "../../hooks/useUserAvatarProfile";
 
 function ProfileMenuItem({
   icon,
@@ -44,9 +46,9 @@ export default function EmployeeNavbar({
   onMenuClick,
   employeeId,
   employeeName,
-  employeeInitials,
 }: EmployeeNavbarProps) {
   const navigate = useNavigate();
+  const { profile, defaultPresetId } = useUserAvatarProfile(employeeId);
   const notificationCenter = useNotificationCenter(employeeId);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -100,9 +102,7 @@ export default function EmployeeNavbar({
             className="flex items-center gap-2 rounded-xl px-1.5 py-1 transition-colors hover:bg-[#F1F5F9] sm:pl-1.5 sm:pr-3"
             aria-expanded={profileOpen}
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-sm font-semibold text-blue-800">
-              {employeeInitials}
-            </div>
+            <UserAvatar userId={employeeId} name={employeeName} presetId={profile.avatarPresetId || defaultPresetId} photoUrl={profile.photoUrl} size={40} />
             <span className="hidden text-sm font-medium text-[#0F172A] sm:block">{employeeName}</span>
             <ChevronDown className="hidden h-4 w-4 text-[#64748B] sm:block" />
           </button>
@@ -121,6 +121,7 @@ export default function EmployeeNavbar({
                   <p className="text-xs text-[#64748B]">Employee</p>
                 </div>
                 <div className="my-1 h-px bg-[#E2E8F0]" />
+                <ProfileMenuItem icon={<Settings className="h-4 w-4" />} label="Settings" onClick={() => { setProfileOpen(false); navigate("/settings"); }} />
                 <ProfileMenuItem
                   icon={<LogOut className="h-4 w-4" />}
                   label={isLoggingOut ? "Signing out..." : "Sign out"}

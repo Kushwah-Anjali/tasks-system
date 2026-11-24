@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   CalendarCheck2,
   ClipboardList,
+  BriefcaseBusiness,
   Settings,
   // UserRound,
   X,
@@ -30,6 +31,7 @@ const navItems: EmployeeNavItem[] = [
     requiresAttendanceManagement: true,
   },
   { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/employee-tasks" },
+  { label: "My Leads", icon: <BriefcaseBusiness className="h-[18px] w-[18px]" />, path: "/employee-leads" },
   { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" />, path: "/settings" },
 ];
 

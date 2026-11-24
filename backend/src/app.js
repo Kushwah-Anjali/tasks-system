@@ -13,6 +13,8 @@ const notificationRoutes =
   require("./routes/notificationRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const leadRoutes = require("./routes/leadRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 const clientOrigins = require("./config/clientOrigins");
 app.use(cors({
   origin: clientOrigins,
@@ -38,6 +40,8 @@ app.use(
   notificationRoutes
 );
 app.use("/api/ai", aiRoutes);
+app.use("/api/leads", leadRoutes);
+app.use("/api/profile", profileRoutes);
 app.use((req, res) => {
   return res.status(404).json({
     message: "API route not found",

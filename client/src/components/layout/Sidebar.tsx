@@ -6,6 +6,7 @@ import {
   Users,
   CalendarCheck2,
   ClipboardList,
+  ContactRound,
   Settings,
   X,
 } from "lucide-react";
@@ -14,6 +15,7 @@ export interface NavItem {
   label: string;
   icon: ReactNode;
   path?: string;
+  managerOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -21,6 +23,7 @@ const navItems: NavItem[] = [
   { label: "Employees", icon: <Users className="h-[18px] w-[18px]" />, path: "/employees" },
   { label: "Attendance", icon: <CalendarCheck2 className="h-[18px] w-[18px]" />, path: "/attendance" },
   { label: "Tasks", icon: <ClipboardList className="h-[18px] w-[18px]" />, path: "/tasks" },
+  { label: "Leads", icon: <ContactRound className="h-[18px] w-[18px]" />, path: "/leads", managerOnly: true },
   { label: "Settings", icon: <Settings className="h-[18px] w-[18px]" />, path: "/settings" },
 ];
 
@@ -37,7 +40,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
       item.path !== "/attendance" ||
       user.role === "manager" ||
       user.can_manage_attendance === true
-  );
+  ).filter((item) => !item.managerOnly || user.role === "manager");
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-[#D5DFEC] bg-white shadow-[3px_0_16px_rgba(30,41,59,0.025)] transition-transform duration-300 ease-in-out lg:translate-x-0 ${

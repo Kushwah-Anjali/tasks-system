@@ -17,6 +17,11 @@ import Tasks from "./pages/Tasks";
 import TaskDetails from "./pages/TaskDetails";
 import AdminAccounts from "./pages/AdminAccounts";
 import Settings from "./pages/Settings";
+import Leads from "./pages/Leads";
+import LeadDetails from "./pages/LeadDetails";
+import EmployeeLeads from "./pages/EmployeeLeads";
+import EmployeeLeadDetails from "./pages/EmployeeLeadDetails";
+import EmployeeAssignmentHistory from "./pages/EmployeeAssignmentHistory";
 
 import { getCurrentUser } from "./utils/authStorage";
 
@@ -130,6 +135,9 @@ export default function App() {
                 }
             />
 
+            <Route path="/leads" element={<ProtectedRoute allowedRole="manager"><Leads /></ProtectedRoute>} />
+            <Route path="/leads/:leadId" element={<ProtectedRoute allowedRole="manager"><LeadDetails /></ProtectedRoute>} />
+
             <Route
                 path="/attendance"
                 element={
@@ -157,6 +165,9 @@ export default function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route path="/employee-leads" element={<ProtectedRoute allowedRole="employee"><EmployeeLeads /></ProtectedRoute>} />
+            <Route path="/employee-leads/:leadId" element={<ProtectedRoute allowedRole="employee"><EmployeeLeadDetails /></ProtectedRoute>} />
+            <Route path="/employee-leads/:leadId/history/:assignmentId" element={<ProtectedRoute allowedRole="employee"><EmployeeAssignmentHistory /></ProtectedRoute>} />
 
             {/* Unknown route */}
             <Route

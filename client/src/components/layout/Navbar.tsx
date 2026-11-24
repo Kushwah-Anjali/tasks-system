@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useLogout } from "../../hooks/useLogout";
 import { useNotificationCenter } from "../../hooks/useNotificationCenter";
 import NotificationPanel from "./NotificationPanel";
+import UserAvatar from "../profile/UserAvatar";
+import { useUserAvatarProfile } from "../../hooks/useUserAvatarProfile";
 import type {
     AuthUser,
 } from "../../types/auth";
@@ -11,7 +13,7 @@ import {
   Menu,
   Search,
   ChevronDown,
-  // Settings,
+  Settings,
   LogOut,
   // UserRound,
 } from "lucide-react";
@@ -49,6 +51,7 @@ interface NavbarProps {
 }
 export default function Navbar({ onMenuClick, user }: NavbarProps) {
   const navigate = useNavigate();
+  const { profile, defaultPresetId } = useUserAvatarProfile(user.id);
   const {
     notifications,
     unreadCount,
@@ -83,11 +86,6 @@ const {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const initials = user.full_name
-    .split(" ")
-    .map((name) => name[0])
-    .join("")
-    .toUpperCase();
   return (
     <header className="sticky top-0 z-30 flex h-20 items-center gap-3 border-b border-[#E2E8F0] bg-white/95 px-4 backdrop-blur-sm sm:px-6">
  
@@ -147,9 +145,7 @@ const {
             onClick={() => setProfileOpen((prev) => !prev)}
             className="flex items-center gap-2 rounded-xl px-1.5 py-1 hover:bg-[#F1F5F9] sm:pl-1.5 sm:pr-3"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-sm font-semibold text-blue-800">
-              {initials}
-            </div>
+            <UserAvatar userId={user.id} name={user.full_name} presetId={profile.avatarPresetId || defaultPresetId} photoUrl={profile.photoUrl} size={40} />
             <span className="hidden text-sm font-medium text-[#0F172A] sm:block">
               {user.full_name}
             </span>
@@ -178,10 +174,7 @@ const {
                   icon={<UserRound className="h-4 w-4" />}
                   label="View profile"
                 /> */}
-                {/* <ProfileMenuItem
-                  icon={<Settings className="h-4 w-4" />}
-                  label="Account settings"
-                /> */}
+                <ProfileMenuItem icon={<Settings className="h-4 w-4" />} label="Settings" onClick={() => { setProfileOpen(false); navigate("/settings"); }} />
                 <div className="my-1 h-px bg-[#E2E8F0]" />
              <ProfileMenuItem
     icon={

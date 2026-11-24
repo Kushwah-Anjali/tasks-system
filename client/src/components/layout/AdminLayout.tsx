@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useLogout } from "../../hooks/useLogout";
 import type { AuthUser } from "../../types/auth";
-import { getInitials } from "../../utils/authStorage";
+import UserAvatar from "../profile/UserAvatar";
+import { useUserAvatarProfile } from "../../hooks/useUserAvatarProfile";
 
 export default function AdminLayout({ user, children }: { user: AuthUser; children: ReactNode }) {
+  const { profile, defaultPresetId } = useUserAvatarProfile(user.id);
   const { handleLogout, isLoggingOut } = useLogout();
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
@@ -19,7 +21,7 @@ export default function AdminLayout({ user, children }: { user: AuthUser; childr
             <span className="text-sm font-semibold text-slate-700 sm:ml-2 sm:border-l sm:border-slate-200 sm:pl-4">Accounts</span>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-800" aria-hidden="true">{getInitials(user.full_name)}</span>
+            <UserAvatar userId={user.id} name={user.full_name} presetId={profile.avatarPresetId || defaultPresetId} photoUrl={profile.photoUrl} size={36} />
             <span className="hidden max-w-40 truncate text-sm font-medium sm:block">{user.full_name}</span>
             <Link to="/settings" className="rounded-lg px-2 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">Settings</Link>
             <button type="button" onClick={() => void handleLogout()} disabled={isLoggingOut} className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">{isLoggingOut ? "Signing out…" : "Sign out"}</button>
